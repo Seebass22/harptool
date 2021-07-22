@@ -6,8 +6,11 @@ struct Scale {
 
 impl Scale {
     fn new(note: &str) -> Scale {
-	let notes = vec!["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-	// let notes = vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+	let notes = if vec!["C", "G", "D", "A", "E", "B", "F#"].contains(&note) {
+	    vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+	} else {
+	    vec!["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+	};
 
 	let mut pos = notes.iter().position(|&n| n == note).unwrap();
 	let mut v = Vec::new();
@@ -28,12 +31,10 @@ impl Scale {
 	let notes = &self.notes;
 
 	for i in indices {
-	    // println!("{:?}", i);
 	    let n = match *i {
 		Some(n) => notes.get(n).unwrap().to_string(),
 		None => String::from(" "),
 	    };
-	    // print!("{} ", n);
 	    print!("{:width$} ", n, width = 3);
 	}
 	print!("\n");
