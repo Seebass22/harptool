@@ -4,6 +4,32 @@ struct Scale {
     notes: Vec<String>
 }
 
+// #[derive(Debug)]
+#[derive(Clone)]
+pub struct Tuning {
+    blow: Vec<Option<usize>>,
+    draw: Vec<Option<usize>>,
+    bends_half: Vec<Option<usize>>,
+    bends_full: Vec<Option<usize>>,
+    bends_one_and_half: Vec<Option<usize>>,
+    blow_bends_half: Vec<Option<usize>>,
+    blow_bends_full: Vec<Option<usize>>,
+}
+
+impl Default for Tuning {
+    fn default() -> Tuning {
+	Tuning {
+	    blow: vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0)],
+	    draw: vec![Some(2), Some(7), Some(11), Some(2), Some(5), Some(9), Some(11), Some(2), Some(5), Some(9)],
+	    bends_half: vec![Some(1), Some(6), Some(10), Some(2), None, Some(8), None, None, None],
+	    bends_full: vec![None, Some(5), Some(9), None, None, None, None, None, None, None],
+	    bends_one_and_half: vec![None, None, Some(8), None, None, None, None, None, None, None],
+	    blow_bends_half: vec![None, None, None, None, None, None, None, Some(3), Some(6), Some(11)],
+	    blow_bends_full: vec![None, None, None, None, None, None, None, None, None, Some(10)],
+	}
+    }
+}
+
 impl Scale {
     fn new(note: &str) -> Scale {
 	let notes = if vec!["C", "G", "D", "A", "E", "B", "F#"].contains(&note) {
@@ -25,8 +51,8 @@ impl Scale {
 	}
     }
 
-    fn printnotes(&self, indices: &Vec<Option<usize>>) {
-	//                0     1    2    3     4    5     6     7    8    9    10   11
+    fn printrow(&self, indices: &Vec<Option<usize>>) {
+	//                   0     1    2    3     4    5     6     7    8    9    10   11
 	// let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 	let notes = &self.notes;
 
@@ -39,24 +65,43 @@ impl Scale {
 	}
 	print!("\n");
     }
+
+    fn printlayout(&self, tuning: &Tuning) {
+	print!("{:width$} ", "blow bends full step", width = 20);
+	self.printrow(&tuning.blow_bends_full);
+	print!("{:width$} ", "blow bends half step", width = 20);
+	self.printrow(&tuning.blow_bends_half);
+	print!("{:width$} ", "blow", width = 20);
+	self.printrow(&tuning.blow);
+	println!("{:width$} 1   2   3   4   5   6   7   8   9   10", "",  width = 20);
+	print!("{:width$} ", "draw", width = 20);
+	self.printrow(&tuning.draw);
+	print!("{:width$} ", "bends half step", width = 20);
+	self.printrow(&tuning.bends_half);
+	print!("{:width$} ", "bends full step", width = 20);
+	self.printrow(&tuning.bends_full);
+	print!("{:width$} ", "bends 1 1/2 step", width = 20);
+	self.printrow(&tuning.bends_one_and_half);
+    }
 }
 
 pub fn test() {
-    let top = vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0)];
-    let bottom = vec![Some(2), Some(7), Some(11), Some(2), Some(5), Some(9), Some(11), Some(2), Some(5), Some(9)];
-    let bends_half = vec![Some(1), Some(6), Some(10), None, Some(8), None, None, None, None];
-    let bends_full = vec![None, Some(5), Some(9), None, None, None, None, None, None, None];
-    let bends_one_and_half = vec![None, None, Some(8), None, None, None, None, None, None, None];
-    let blow_bends_half = vec![None, None, None, None, None, None, None, Some(3), Some(6), Some(11)];
-    let blow_bends_full = vec![None, None, None, None, None, None, None, None, None, Some(10)];
+    let richter = Tuning::default();
+    let country = Tuning {
+	draw: vec![Some(2), Some(7), Some(11), Some(2), Some(6), Some(9), Some(11), Some(2), Some(5), Some(9)],
+	bends_half: vec![Some(1), Some(6), Some(10), Some(2), Some(5), Some(8), None, None, None],
+	..richter.clone()
+    };
+    let wilde_tuned = Tuning {
+	blow: vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(4), Some(7), Some(0), Some(4), Some(9)],
+	draw: vec![Some(2), Some(7), Some(11), Some(2), Some(5), Some(7), Some(11), Some(2), Some(7), Some(0)],
+	blow_bends_half: vec![None, None, None, None, None, None, None, None, None, None],
+	blow_bends_full: vec![None, None, None, None, None, None, None, None, None, None],
+	bends_half: vec![Some(1), Some(6), Some(10), Some(1), None, Some(6), Some(10), Some(1), Some(6), Some(11)],
+	bends_full: vec![None, Some(5), Some(9), None, None, Some(5), Some(9), None, Some(5), Some(10)],
+	bends_one_and_half: vec![None, None, Some(8), None, None, None, Some(8), None, None, None],
+    };
 
-    let v = Scale::new("Bb");
-
-    v.printnotes(&blow_bends_full);
-    v.printnotes(&blow_bends_half);
-    v.printnotes(&top);
-    v.printnotes(&bottom);
-    v.printnotes(&bends_half);
-    v.printnotes(&bends_full);
-    v.printnotes(&bends_one_and_half);
+    let v = Scale::new("C");
+    v.printlayout(&richter);
 }
