@@ -4,7 +4,8 @@ struct Scale {
     notes: Vec<String>
 }
 
-// #[derive(Debug)]
+#[derive(Debug)]
+#[derive(PartialEq)]
 #[derive(Clone)]
 pub struct Tuning {
     blow: Vec<Option<usize>>,
@@ -21,11 +22,69 @@ impl Default for Tuning {
 	Tuning {
 	    blow: vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0)],
 	    draw: vec![Some(2), Some(7), Some(11), Some(2), Some(5), Some(9), Some(11), Some(2), Some(5), Some(9)],
-	    bends_half: vec![Some(1), Some(6), Some(10), Some(2), None, Some(8), None, None, None],
+	    bends_half: vec![Some(1), Some(6), Some(10), Some(1), None, Some(8), None, None, None, None],
 	    bends_full: vec![None, Some(5), Some(9), None, None, None, None, None, None, None],
 	    bends_one_and_half: vec![None, None, Some(8), None, None, None, None, None, None, None],
 	    blow_bends_half: vec![None, None, None, None, None, None, None, Some(3), Some(6), Some(11)],
 	    blow_bends_full: vec![None, None, None, None, None, None, None, None, None, Some(10)],
+	}
+    }
+}
+
+impl Tuning {
+    pub fn new(top_notes: Vec<usize>, bottom_notes: Vec<usize>) -> Tuning {
+	fn is_within_5_semitones(top: usize, bottom: usize) -> bool {
+	    (bottom as i32 - top as i32).abs() < 5
+	}
+
+	let blow: Vec<Option<usize>> = top_notes.iter().map(|x| Some(*x)).collect();
+	let draw: Vec<Option<usize>> = bottom_notes.iter().map(|x| Some(*x)).collect();
+	let mut bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+	let mut bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+	let mut bends_one_and_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+	let mut blow_bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+	let mut blow_bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+
+	for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes.clone()).enumerate() {
+	    let mut top = *top;
+	    let mut bottom = bottom;
+
+	    if ! is_within_5_semitones(top, bottom) {
+		if top > bottom {
+		    bottom += 12;
+		} else {
+		    top += 12;
+		}
+	    }
+
+	    if bottom > top {
+		if bottom - top == 4 {
+		    bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
+		}
+		if bottom - top >= 3 {
+		   bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
+		}
+		if bottom - top >= 2 {
+		   bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
+		}
+	    } else {
+		if top - bottom == 3 {
+		    blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
+		}
+		if top - bottom >= 2 {
+		    blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
+		}
+	    }
+	}
+
+	Tuning {
+	    blow,
+	    draw,
+	    bends_half,
+	    bends_full,
+	    bends_one_and_half,
+	    blow_bends_half,
+	    blow_bends_full,
 	}
     }
 }
@@ -87,21 +146,29 @@ impl Scale {
 
 pub fn test() {
     let richter = Tuning::default();
-    let country = Tuning {
+    let _country = Tuning {
 	draw: vec![Some(2), Some(7), Some(11), Some(2), Some(6), Some(9), Some(11), Some(2), Some(5), Some(9)],
-	bends_half: vec![Some(1), Some(6), Some(10), Some(2), Some(5), Some(8), None, None, None],
+	bends_half: vec![Some(1), Some(6), Some(10), Some(1), Some(5), Some(8), None, None, None],
 	..richter.clone()
     };
-    let wilde_tuned = Tuning {
-	blow: vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(4), Some(7), Some(0), Some(4), Some(9)],
-	draw: vec![Some(2), Some(7), Some(11), Some(2), Some(5), Some(7), Some(11), Some(2), Some(7), Some(0)],
-	blow_bends_half: vec![None, None, None, None, None, None, None, None, None, None],
-	blow_bends_full: vec![None, None, None, None, None, None, None, None, None, None],
-	bends_half: vec![Some(1), Some(6), Some(10), Some(1), None, Some(6), Some(10), Some(1), Some(6), Some(11)],
-	bends_full: vec![None, Some(5), Some(9), None, None, Some(5), Some(9), None, Some(5), Some(10)],
-	bends_one_and_half: vec![None, None, Some(8), None, None, None, Some(8), None, None, None],
-    };
+    let _wilde_tuned = Tuning::new(
+	vec![0, 4, 7, 0, 4, 4, 7, 0, 4, 9],
+	vec![2, 7, 11, 2, 5, 7, 11, 2, 7, 0],
+    );
 
     let v = Scale::new("C");
-    v.printlayout(&richter);
+    v.printlayout(&_wilde_tuned);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_tuning_new() {
+	let tuning = Tuning::new(
+	    vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0],
+	    vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9],
+	);
+	assert_eq!(tuning, Tuning::default());
+    }
 }
