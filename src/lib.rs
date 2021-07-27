@@ -1,3 +1,5 @@
+use std::fs;
+
 #[derive(Debug)]
 struct Scale {
     root: String,
@@ -58,7 +60,7 @@ impl Tuning {
 	    }
 
 	    if bottom > top {
-		if bottom - top == 4 {
+		if bottom - top >= 4 {
 		    bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
 		}
 		if bottom - top >= 3 {
@@ -68,7 +70,7 @@ impl Tuning {
 		   bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
 		}
 	    } else {
-		if top - bottom == 3 {
+		if top - bottom >= 3 {
 		    blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
 		}
 		if top - bottom >= 2 {
@@ -156,8 +158,9 @@ pub fn test() {
 	vec![2, 7, 11, 2, 5, 7, 11, 2, 7, 0],
     );
 
+    let tuning = read_tuning_from_file("richter.txt");
     let v = Scale::new("C");
-    v.printlayout(&_wilde_tuned);
+    v.printlayout(&tuning)
 }
 
 fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
@@ -176,6 +179,22 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
 	    );
     }
     (top_numbers, bottom_numbers)
+}
+
+fn read_tuning_from_file(filename: &str) -> Tuning {
+    let contents: Vec<String> = fs::read_to_string(filename)
+        .expect("note layout file not found")
+	.lines()
+	.map(|s| s.to_string())
+	.collect();
+    let top: Vec<&str> = contents.get(0).unwrap()
+        .split(" ").collect();
+    let bottom: Vec<&str> = contents.get(1).unwrap()
+        .split(" ").collect();
+
+    let (top, bottom) = convert_to_numbers(top, bottom);
+
+    Tuning::new(top, bottom)
 }
 
 #[cfg(test)]
