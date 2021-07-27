@@ -160,6 +160,24 @@ pub fn test() {
     v.printlayout(&_wilde_tuned);
 }
 
+fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
+    let mut top_numbers: Vec<usize> = Vec::new();
+    let mut bottom_numbers: Vec<usize> = Vec::new();
+    let scale = Scale::new(top.get(0).unwrap());
+
+    for note in top.iter() {
+	top_numbers.push(
+	    scale.notes.iter().position(|x| note == &x).unwrap()
+	    );
+    }
+    for note in bottom.iter() {
+	bottom_numbers.push(
+	    scale.notes.iter().position(|x| note == &x).unwrap()
+	    );
+    }
+    (top_numbers, bottom_numbers)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,5 +188,22 @@ mod tests {
 	    vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9],
 	);
 	assert_eq!(tuning, Tuning::default());
+    }
+
+    #[test]
+    fn test_convert_to_numbers() {
+	let top = vec!["C", "E", "G", "C", "E", "G", "C", "E", "G", "C"];
+	let bottom = vec!["D", "G", "B", "D", "F", "A", "B", "D", "F", "A"];
+	let top_numbers = vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0];
+	let bottom_numbers = vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9];
+	let (res_top, res_bottom) = convert_to_numbers(top, bottom);
+	assert_eq!(top_numbers, res_top);
+	assert_eq!(bottom_numbers, res_bottom);
+
+	let top = vec!["D", "F#", "A", "D", "F#", "A", "D", "F#", "A", "D"];
+	let bottom = vec!["E", "A", "C#", "E", "G", "B", "C#", "E", "G", "B"];
+	let (res_top, res_bottom) = convert_to_numbers(top, bottom);
+	assert_eq!(top_numbers, res_top);
+	assert_eq!(bottom_numbers, res_bottom);
     }
 }
