@@ -92,8 +92,19 @@ impl Tuning {
 }
 
 impl Scale {
-    fn new(note: &str) -> Scale {
-	let notes = if vec!["C", "G", "D", "A", "E", "B", "F#"].contains(&note) {
+    fn new(note: &str, sharp_notes: Option<bool>) -> Scale {
+	let sharp;
+	if let Some(value) = sharp_notes {
+	    sharp = value;
+	} else {
+	    sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note) {
+		false
+	    } else {
+		true
+	    }
+	}
+
+	let notes = if sharp {
 	    vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 	} else {
 	    vec!["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
@@ -158,15 +169,19 @@ pub fn test() {
 	vec![2, 7, 11, 2, 5, 7, 11, 2, 7, 0],
     );
 
-    let tuning = read_tuning_from_file("richter.txt");
-    let v = Scale::new("C");
+    let tuning = read_tuning_from_file("natural_minor.txt");
+    let v = Scale::new("C", Some(false));
     v.printlayout(&tuning)
 }
 
 fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
     let mut top_numbers: Vec<usize> = Vec::new();
     let mut bottom_numbers: Vec<usize> = Vec::new();
-    let scale = Scale::new(top.get(0).unwrap());
+
+    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"];
+    let sharp = ! top.iter().any(|s| flat_notes.contains(s));
+
+    let scale = Scale::new(top.get(0).unwrap(), Some(sharp));
 
     for note in top.iter() {
 	top_numbers.push(
