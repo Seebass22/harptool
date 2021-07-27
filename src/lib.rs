@@ -96,12 +96,23 @@ impl Scale {
 	let sharp;
 	if let Some(value) = sharp_notes {
 	    sharp = value;
+	    if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
+	    || (! sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note)) {
+		panic!("cannot choose sharp/flat notes if root is sharp/flat");
+	    }
 	} else {
 	    sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note) {
 		false
 	    } else {
 		true
 	    }
+	}
+
+	if ! vec!["F", "C", "G", "D", "A", "E", "B",
+		  "Bb", "Eb", "Ab", "Db", "Gb",
+		  "F#", "C#", "G#", "D#", "A#",]
+	    .contains(&note) {
+		panic!("invalid root note");
 	}
 
 	let notes = if sharp {
@@ -157,20 +168,9 @@ impl Scale {
     }
 }
 
-pub fn test() {
-    let richter = Tuning::default();
-    let _country = Tuning {
-	draw: vec![Some(2), Some(7), Some(11), Some(2), Some(6), Some(9), Some(11), Some(2), Some(5), Some(9)],
-	bends_half: vec![Some(1), Some(6), Some(10), Some(1), Some(5), Some(8), None, None, None],
-	..richter.clone()
-    };
-    let _wilde_tuned = Tuning::new(
-	vec![0, 4, 7, 0, 4, 4, 7, 0, 4, 9],
-	vec![2, 7, 11, 2, 5, 7, 11, 2, 7, 0],
-    );
-
-    let tuning = read_tuning_from_file("natural_minor.txt");
-    let v = Scale::new("C", Some(false));
+pub fn run(tuning: &str, key: &str, sharp: Option<bool>) {
+    let tuning = read_tuning_from_file(tuning);
+    let v = Scale::new(key, sharp);
     v.printlayout(&tuning)
 }
 
