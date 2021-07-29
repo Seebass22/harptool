@@ -23,7 +23,7 @@ fn main() {
 	     .help("use flats"))
         .get_matches();
 
-    let tuning = matches.value_of("tuning").unwrap_or("richter.txt");
+    let tuning = matches.value_of("tuning").unwrap_or("richter");
     let key = matches.value_of("key").unwrap_or("C");
     let sharp = if matches.is_present("sharps") {
 	Some(true)

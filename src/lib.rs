@@ -1,4 +1,6 @@
 use std::fs;
+use std::io::Write;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 struct Scale {
@@ -199,6 +201,10 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
 fn read_tuning_from_file(filename: &str) -> Tuning {
     let mut filepath = dirs::config_dir().unwrap();
     filepath.push("harptool");
+    if ! filepath.is_dir() {
+	write_default_layouts();
+    }
+
     filepath.push(filename);
 
     let contents: Vec<String> = fs::read_to_string(filepath)
@@ -214,6 +220,35 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
     let (top, bottom) = convert_to_numbers(top, bottom);
 
     Tuning::new(top, bottom)
+}
+
+fn write_default_layouts() {
+    fn write_layout(tuning: &str, name: &str, path: &mut PathBuf) {
+	path.push(name);
+	let mut f = fs::File::create(&path).unwrap();
+	f.write_all(tuning.as_bytes()).unwrap();
+	path.pop();
+    }
+
+    let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
+    let country = "C E G C E G C E G C\nD G B D F# A B D F A\n";
+    let wilde = "C E G C E E G C E A\nD G B D F G B D G C\n";
+    let melody_maker = "C E A C E G C E G C\nD G B D F# A B D F# A\n";
+    let natural_minor = "C Eb G C Eb G C Eb G C\nD G Bb D F A Bb D F A\n";
+    let harmonic_minor = "C Eb G C Eb G C Eb G C\nD G B D F Ab B D F Ab\n";
+    let paddy_richter = "C E A C E G C E G C\nD G B D F A B D F A\n";
+
+    let mut filepath = dirs::config_dir().unwrap();
+    filepath.push("harptool");
+    fs::create_dir_all(&filepath).expect("could not create note layout dir");
+
+    write_layout(richter, "richter", &mut filepath);
+    write_layout(country, "country", &mut filepath);
+    write_layout(wilde, "wilde", &mut filepath);
+    write_layout(melody_maker, "melody_maker", &mut filepath);
+    write_layout(natural_minor, "natural_minor", &mut filepath);
+    write_layout(harmonic_minor, "harmonic_minor", &mut filepath);
+    write_layout(paddy_richter, "paddy_richter", &mut filepath);
 }
 
 #[cfg(test)]
