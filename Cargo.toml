@@ -1,5 +1,5 @@
 [package]
-name = "harmonica"
+name = "harptool"
 version = "0.1.0"
 edition = "2018"
 
@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.3"
+dirs = "3.0.2"

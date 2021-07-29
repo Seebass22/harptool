@@ -1,21 +1,20 @@
 extern crate clap;
 use clap::{Arg, App};
-use harmonica::run;
+use harptool::run;
 
 fn main() {
-    let matches = App::new("harmonica tool")
-	.author("Sebastian Thümmel")
+    let matches = App::new("harptool")
 	.about("print harmonica note layouts")
 	.arg(Arg::with_name("tuning")
 	     .short("t")
 	     .long("tuning")
 	     .value_name("TUNING")
-	     .help("select the tuning"))
+	     .help("select tuning"))
 	.arg(Arg::with_name("key")
 	     .short("k")
 	     .long("key")
 	     .value_name("KEY")
-	     .help("select the key"))
+	     .help("select key"))
 	.arg(Arg::with_name("sharps")
 	     .long("sharps")
 	     .help("use sharps"))

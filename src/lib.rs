@@ -197,7 +197,11 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
 }
 
 fn read_tuning_from_file(filename: &str) -> Tuning {
-    let contents: Vec<String> = fs::read_to_string(filename)
+    let mut filepath = dirs::config_dir().unwrap();
+    filepath.push("harptool");
+    filepath.push(filename);
+
+    let contents: Vec<String> = fs::read_to_string(filepath)
         .expect("note layout file not found")
 	.lines()
 	.map(|s| s.to_string())
