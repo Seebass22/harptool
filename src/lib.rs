@@ -8,9 +8,7 @@ struct Scale {
     notes: Vec<String>
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Tuning {
     blow: Vec<Option<usize>>,
     draw: Vec<Option<usize>>,
@@ -66,10 +64,10 @@ impl Tuning {
 		    bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
 		}
 		if bottom - top >= 3 {
-		   bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
+		    bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
 		}
 		if bottom - top >= 2 {
-		   bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
+		    bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
 		}
 	    } else {
 		if top - bottom >= 3 {
@@ -98,10 +96,10 @@ impl Scale {
 	let sharp;
 	if let Some(value) = sharp_notes {
 	    sharp = value;
-	    if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
-	    || (! sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note)) {
-		panic!("cannot choose sharp/flat notes if root is sharp/flat");
-	    }
+	    if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note)) ||
+		(! sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note)) {
+		    panic!("cannot choose sharp/flat notes if root is sharp/flat");
+		}
 	} else {
 	    sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note) {
 		false
@@ -115,7 +113,7 @@ impl Scale {
 		  "F#", "C#", "G#", "D#", "A#",]
 	    .contains(&note) {
 		panic!("invalid root note");
-	}
+	    }
 
 	let notes = if sharp {
 	    vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -180,7 +178,7 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let mut top_numbers: Vec<usize> = Vec::new();
     let mut bottom_numbers: Vec<usize> = Vec::new();
 
-    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"];
+    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"];
     let sharp = ! top.iter().any(|s| flat_notes.contains(s));
 
     let scale = Scale::new(top.get(0).unwrap(), Some(sharp));
@@ -188,12 +186,12 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     for note in top.iter() {
 	top_numbers.push(
 	    scale.notes.iter().position(|x| note == &x).unwrap()
-	    );
+	);
     }
     for note in bottom.iter() {
 	bottom_numbers.push(
 	    scale.notes.iter().position(|x| note == &x).unwrap()
-	    );
+	);
     }
     (top_numbers, bottom_numbers)
 }
@@ -208,14 +206,14 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
     filepath.push(filename);
 
     let contents: Vec<String> = fs::read_to_string(filepath)
-        .expect("note layout file not found")
+	.expect("note layout file not found")
 	.lines()
 	.map(|s| s.to_string())
 	.collect();
     let top: Vec<&str> = contents.get(0).unwrap()
-        .split(" ").collect();
+	.split(" ").collect();
     let bottom: Vec<&str> = contents.get(1).unwrap()
-        .split(" ").collect();
+	.split(" ").collect();
 
     let (top, bottom) = convert_to_numbers(top, bottom);
 
