@@ -101,7 +101,7 @@ impl Scale {
                     panic!("cannot choose sharp/flat notes if root is sharp/flat");
                 }
         } else {
-            sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note) {
+            sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note) {
                 false
             } else {
                 true
@@ -178,8 +178,8 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let mut top_numbers: Vec<usize> = Vec::new();
     let mut bottom_numbers: Vec<usize> = Vec::new();
 
-    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"];
-    let sharp = ! top.iter().any(|s| flat_notes.contains(s));
+    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb"];
+    let sharp = ! (top.iter().any(|s| flat_notes.contains(s)) || bottom.iter().any(|s| flat_notes.contains(s)));
 
     let scale = Scale::new(top.get(0).unwrap(), Some(sharp));
 
@@ -273,6 +273,12 @@ mod tests {
 
         let top = vec!["D", "F#", "A", "D", "F#", "A", "D", "F#", "A", "D"];
         let bottom = vec!["E", "A", "C#", "E", "G", "B", "C#", "E", "G", "B"];
+        let (res_top, res_bottom) = convert_to_numbers(top, bottom);
+        assert_eq!(top_numbers, res_top);
+        assert_eq!(bottom_numbers, res_bottom);
+
+        let top = vec!["F", "A", "C", "F", "A", "C", "F", "A", "C", "F"];
+        let bottom = vec!["G", "C", "E", "G", "Bb", "D", "E", "G", "Bb", "D"];
         let (res_top, res_bottom) = convert_to_numbers(top, bottom);
         assert_eq!(top_numbers, res_top);
         assert_eq!(bottom_numbers, res_bottom);
