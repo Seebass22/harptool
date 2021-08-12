@@ -47,7 +47,7 @@ impl Tuning {
         let mut blow_bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
         let mut blow_bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
 
-        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes.clone()).enumerate() {
+        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             let mut top = *top;
             let mut bottom = bottom;
 
@@ -101,11 +101,7 @@ impl Scale {
                     panic!("cannot choose sharp/flat notes if root is sharp/flat");
                 }
         } else {
-            sharp = if vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note) {
-                false
-            } else {
-                true
-            }
+            sharp = !vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note);
         }
 
         if ! vec!["F", "C", "G", "D", "A", "E", "B",
@@ -134,7 +130,7 @@ impl Scale {
         }
     }
 
-    fn printrow(&self, indices: &Vec<Option<usize>>) {
+    fn printrow(&self, indices: &[Option<usize>]) {
         //                   0     1    2    3     4    5     6     7    8    9    10   11
         // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
         let notes = &self.notes;
@@ -146,7 +142,7 @@ impl Scale {
             };
             print!("{:width$} ", n, width = 3);
         }
-        print!("\n");
+        println!();
     }
 
     fn printlayout(&self, tuning: &Tuning) {
@@ -185,12 +181,12 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
 
     for note in top.iter() {
         top_numbers.push(
-            scale.notes.iter().position(|x| note == &x).unwrap()
+            scale.notes.iter().position(|x| note == x).unwrap()
         );
     }
     for note in bottom.iter() {
         bottom_numbers.push(
-            scale.notes.iter().position(|x| note == &x).unwrap()
+            scale.notes.iter().position(|x| note == x).unwrap()
         );
     }
     (top_numbers, bottom_numbers)
@@ -211,9 +207,9 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
         .map(|s| s.to_string())
         .collect();
     let top: Vec<&str> = contents.get(0).unwrap()
-        .split(" ").collect();
+        .split(' ').collect();
     let bottom: Vec<&str> = contents.get(1).unwrap()
-        .split(" ").collect();
+        .split(' ').collect();
 
     let (top, bottom) = convert_to_numbers(top, bottom);
 
