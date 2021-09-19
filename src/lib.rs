@@ -61,20 +61,20 @@ impl Tuning {
 
             if bottom > top {
                 if bottom - top >= 4 {
-                    bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
+                    let _ = bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
                 }
                 if bottom - top >= 3 {
-                    bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
+                    let _ = bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
                 }
                 if bottom - top >= 2 {
-                    bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
+                    let _ = bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
                 }
             } else {
                 if top - bottom >= 3 {
-                    blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
+                    let _ = blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
                 }
                 if top - bottom >= 2 {
-                    blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
+                    let _ = blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
                 }
             }
         }
@@ -88,6 +88,41 @@ impl Tuning {
             blow_bends_half,
             blow_bends_full,
         }
+    }
+
+    fn printrow(row: &[Option<usize>], position: usize) {
+        fn to_scale_degree(index: usize, position: usize) -> String {
+            let index = (index + (position-1)*5) % 12;
+            let degrees = ["1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7"];
+            String::from(degrees[index])
+        }
+
+        for x in row {
+            let n  = match x {
+                None => String::from(" "),
+                Some(x) => to_scale_degree(*x, position),
+            };
+            print!("{:width$} ", n, width = 3);
+        }
+        println!();
+    }
+
+    fn print_scale_degrees(&self, position: usize) {
+        print!("{:width$} ", "blow bends full step", width = 20);
+        Tuning::printrow(&self.blow_bends_full, position);
+        print!("{:width$} ", "blow bends half step", width = 20);
+        Tuning::printrow(&self.blow_bends_half, position);
+        print!("{:width$} ", "blow", width = 20);
+        Tuning::printrow(&self.blow, position);
+        println!("{:width$} 1   2   3   4   5   6   7   8   9   10", "",  width = 20);
+        print!("{:width$} ", "draw", width = 20);
+        Tuning::printrow(&self.draw, position);
+        print!("{:width$} ", "bends half step", width = 20);
+        Tuning::printrow(&self.bends_half, position);
+        print!("{:width$} ", "bends full step", width = 20);
+        Tuning::printrow(&self.bends_full, position);
+        print!("{:width$} ", "bends 1 1/2 step", width = 20);
+        Tuning::printrow(&self.bends_one_and_half, position);
     }
 }
 
@@ -168,6 +203,11 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>) {
     let tuning = read_tuning_from_file(tuning);
     let v = Scale::new(key, sharp);
     v.printlayout(&tuning)
+}
+
+pub fn run_degrees(tuning: &str, position: usize) {
+    let tuning = read_tuning_from_file(tuning);
+    tuning.print_scale_degrees(position);
 }
 
 fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
