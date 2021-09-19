@@ -1,6 +1,7 @@
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
+use colored::*;
 
 #[derive(Debug)]
 struct Scale {
@@ -114,7 +115,7 @@ impl Tuning {
         Tuning::printrow(&self.blow_bends_half, position);
         print!("{:width$} ", "blow", width = 20);
         Tuning::printrow(&self.blow, position);
-        println!("{:width$} 1   2   3   4   5   6   7   8   9   10", "",  width = 20);
+        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
         print!("{:width$} ", "draw", width = 20);
         Tuning::printrow(&self.draw, position);
         print!("{:width$} ", "bends half step", width = 20);
@@ -187,7 +188,7 @@ impl Scale {
         self.printrow(&tuning.blow_bends_half);
         print!("{:width$} ", "blow", width = 20);
         self.printrow(&tuning.blow);
-        println!("{:width$} 1   2   3   4   5   6   7   8   9   10", "",  width = 20);
+        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
         print!("{:width$} ", "draw", width = 20);
         self.printrow(&tuning.draw);
         print!("{:width$} ", "bends half step", width = 20);
