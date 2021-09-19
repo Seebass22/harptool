@@ -36,11 +36,13 @@ fn main() {
         .arg(
             Arg::with_name("degrees")
                 .long("degrees")
+                .short("d")
                 .help("print scale degrees"),
         )
         .arg(
             Arg::with_name("position")
                 .long("position")
+                .short("p")
                 .value_name("POSITION")
                 .help("set position")
                 .validator(is_valid_position),
