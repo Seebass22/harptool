@@ -18,6 +18,8 @@ pub struct Tuning {
     bends_one_and_half: Vec<Option<usize>>,
     blow_bends_half: Vec<Option<usize>>,
     blow_bends_full: Vec<Option<usize>>,
+    overblows: Vec<Option<usize>>,
+    overdraws: Vec<Option<usize>>,
 }
 
 impl Default for Tuning {
@@ -30,6 +32,8 @@ impl Default for Tuning {
             bends_one_and_half: vec![None, None, Some(8), None, None, None, None, None, None, None],
             blow_bends_half: vec![None, None, None, None, None, None, None, Some(3), Some(6), Some(11)],
             blow_bends_full: vec![None, None, None, None, None, None, None, None, None, Some(10)],
+            overblows: vec![Some(3), Some(8), Some(0), Some(3), Some(6), Some(10), None, None, None, None],
+            overdraws: vec![None, None, None, None, None, None, Some(1), Some(5), Some(8), Some(1)],
         }
     }
 }
@@ -47,6 +51,8 @@ impl Tuning {
         let mut bends_one_and_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
         let mut blow_bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
         let mut blow_bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+        let mut overblows: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+        let mut overdraws: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
 
         for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             let mut top = *top;
@@ -61,6 +67,8 @@ impl Tuning {
             }
 
             if bottom > top {
+                let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
+
                 if bottom - top >= 4 {
                     let _ = bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
                 }
@@ -71,6 +79,8 @@ impl Tuning {
                     let _ = bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
                 }
             } else {
+                let _ = overdraws.get_mut(i).unwrap().insert((top + 1) % 12);
+
                 if top - bottom >= 3 {
                     let _ = blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
                 }
@@ -88,6 +98,8 @@ impl Tuning {
             bends_one_and_half,
             blow_bends_half,
             blow_bends_full,
+            overblows,
+            overdraws,
         }
     }
 
@@ -109,6 +121,9 @@ impl Tuning {
     }
 
     fn print_scale_degrees(&self, position: usize) {
+        print!("{:width$} ", "overblows", width = 20);
+        Tuning::printrow(&self.overblows, position);
+
         print!("{:width$} ", "blow bends full step", width = 20);
         Tuning::printrow(&self.blow_bends_full, position);
         print!("{:width$} ", "blow bends half step", width = 20);
@@ -124,6 +139,9 @@ impl Tuning {
         Tuning::printrow(&self.bends_full, position);
         print!("{:width$} ", "bends 1 1/2 step", width = 20);
         Tuning::printrow(&self.bends_one_and_half, position);
+
+        print!("{:width$} ", "overdraws", width = 20);
+        Tuning::printrow(&self.overdraws, position);
     }
 }
 
@@ -182,6 +200,9 @@ impl Scale {
     }
 
     fn printlayout(&self, tuning: &Tuning) {
+        print!("{:width$} ", "overblows", width = 20);
+        self.printrow(&tuning.overblows);
+
         print!("{:width$} ", "blow bends full step", width = 20);
         self.printrow(&tuning.blow_bends_full);
         print!("{:width$} ", "blow bends half step", width = 20);
@@ -197,6 +218,9 @@ impl Scale {
         self.printrow(&tuning.bends_full);
         print!("{:width$} ", "bends 1 1/2 step", width = 20);
         self.printrow(&tuning.bends_one_and_half);
+
+        print!("{:width$} ", "overdraws", width = 20);
+        self.printrow(&tuning.overdraws);
     }
 }
 
