@@ -3,8 +3,15 @@ use std::io::Write;
 use std::path::PathBuf;
 use colored::*;
 
+mod scales;
+
+pub struct Setup <'a> {
+    pub scale: Option<&'a str>,
+    pub position: usize,
+}
+
 #[derive(Debug)]
-struct Scale {
+struct ChromaticScale {
     root: String,
     notes: Vec<String>
 }
@@ -103,50 +110,102 @@ impl Tuning {
         }
     }
 
-    fn printrow(row: &[Option<usize>], position: usize) {
-        fn to_scale_degree(index: usize, position: usize) -> String {
-            let index = (index + (position-1)*5) % 12;
-            let degrees = ["1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7"];
-            String::from(degrees[index])
-        }
-
+    fn print_row(row: &[Option<usize>], setup: &Setup) {
         for x in row {
             let n  = match x {
                 None => String::from(" "),
-                Some(x) => to_scale_degree(*x, position),
+                Some(x) => to_scale_degree(*x, setup.position),
             };
-            print!("{:width$} ", n, width = 3);
+            Tuning::print_colorized(setup.scale, &n[..], &n[..]);
         }
         println!();
     }
 
-    fn print_scale_degrees(&self, position: usize) {
+    fn print_colorized(scale: Option<&str>, degree: &str, note: &str) {
+        if let Some(scale) = scale {
+            if scales::is_scale_note(degree, scale) {
+                print!("{:width$} ", note.green(), width = 3);
+            } else {
+                print!("{:width$} ", note, width = 3);
+            }
+        } else {
+            print!("{:width$} ", note, width = 3);
+        }
+    }
+
+    fn print_scale_degrees(&self, setup: Setup) {
         print!("{:width$} ", "overblows", width = 20);
-        Tuning::printrow(&self.overblows, position);
+        Tuning::print_row(&self.overblows, &setup);
 
         print!("{:width$} ", "blow bends full step", width = 20);
-        Tuning::printrow(&self.blow_bends_full, position);
+        Tuning::print_row(&self.blow_bends_full, &setup);
         print!("{:width$} ", "blow bends half step", width = 20);
-        Tuning::printrow(&self.blow_bends_half, position);
+        Tuning::print_row(&self.blow_bends_half, &setup);
         print!("{:width$} ", "blow", width = 20);
-        Tuning::printrow(&self.blow, position);
+        Tuning::print_row(&self.blow, &setup);
         println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
         print!("{:width$} ", "draw", width = 20);
-        Tuning::printrow(&self.draw, position);
+        Tuning::print_row(&self.draw, &setup);
         print!("{:width$} ", "bends half step", width = 20);
-        Tuning::printrow(&self.bends_half, position);
+        Tuning::print_row(&self.bends_half, &setup);
         print!("{:width$} ", "bends full step", width = 20);
-        Tuning::printrow(&self.bends_full, position);
+        Tuning::print_row(&self.bends_full, &setup);
         print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        Tuning::printrow(&self.bends_one_and_half, position);
+        Tuning::print_row(&self.bends_one_and_half, &setup);
 
         print!("{:width$} ", "overdraws", width = 20);
-        Tuning::printrow(&self.overdraws, position);
+        Tuning::print_row(&self.overdraws, &setup);
+    }
+
+    fn print_layout(&self, root: &ChromaticScale, setup: Setup) {
+        print!("{:width$} ", "overblows", width = 20);
+        Tuning::print_row_notes(&self.overblows, root, &setup);
+
+        print!("{:width$} ", "blow bends full step", width = 20);
+        Tuning::print_row_notes(&self.blow_bends_full, root, &setup);
+        print!("{:width$} ", "blow bends half step", width = 20);
+        Tuning::print_row_notes(&self.blow_bends_half, root, &setup);
+        print!("{:width$} ", "blow", width = 20);
+        Tuning::print_row_notes(&self.blow, root, &setup);
+        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
+        print!("{:width$} ", "draw", width = 20);
+        Tuning::print_row_notes(&self.draw, root, &setup);
+        print!("{:width$} ", "bends half step", width = 20);
+        Tuning::print_row_notes(&self.bends_half, root, &setup);
+        print!("{:width$} ", "bends full step", width = 20);
+        Tuning::print_row_notes(&self.bends_full, root, &setup);
+        print!("{:width$} ", "bends 1 1/2 step", width = 20);
+        Tuning::print_row_notes(&self.bends_one_and_half, root, &setup);
+
+        print!("{:width$} ", "overdraws", width = 20);
+        Tuning::print_row_notes(&self.overdraws, root, &setup);
+    }
+
+    fn print_row_notes(indices: &[Option<usize>], root: &ChromaticScale, setup: &Setup) {
+        //                   0     1    2    3     4    5     6     7    8    9    10   11
+        // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+        let notes = &root.notes;
+
+        for i in indices {
+            let n = match *i {
+                Some(n) => notes.get(n).unwrap().to_string(),
+                None => String::from(" "),
+            };
+
+            let degree: String;
+            if let Some(index) = *i {
+                degree = to_scale_degree(index, setup.position);
+            } else {
+                degree = String::from("");
+            }
+            Tuning::print_colorized(setup.scale, &degree, &n);
+        }
+        println!();
     }
 }
 
-impl Scale {
-    fn new(note: &str, sharp_notes: Option<bool>) -> Scale {
+impl ChromaticScale {
+    fn new(note: &str, sharp_notes: Option<bool>) -> ChromaticScale {
         let sharp;
         if let Some(value) = sharp_notes {
             sharp = value;
@@ -178,61 +237,22 @@ impl Scale {
             pos += 1;
         }
 
-        Scale {
+        ChromaticScale {
             root: note.to_string(),
             notes: v,
         }
     }
-
-    fn printrow(&self, indices: &[Option<usize>]) {
-        //                   0     1    2    3     4    5     6     7    8    9    10   11
-        // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-        let notes = &self.notes;
-
-        for i in indices {
-            let n = match *i {
-                Some(n) => notes.get(n).unwrap().to_string(),
-                None => String::from(" "),
-            };
-            print!("{:width$} ", n, width = 3);
-        }
-        println!();
-    }
-
-    fn printlayout(&self, tuning: &Tuning) {
-        print!("{:width$} ", "overblows", width = 20);
-        self.printrow(&tuning.overblows);
-
-        print!("{:width$} ", "blow bends full step", width = 20);
-        self.printrow(&tuning.blow_bends_full);
-        print!("{:width$} ", "blow bends half step", width = 20);
-        self.printrow(&tuning.blow_bends_half);
-        print!("{:width$} ", "blow", width = 20);
-        self.printrow(&tuning.blow);
-        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
-        print!("{:width$} ", "draw", width = 20);
-        self.printrow(&tuning.draw);
-        print!("{:width$} ", "bends half step", width = 20);
-        self.printrow(&tuning.bends_half);
-        print!("{:width$} ", "bends full step", width = 20);
-        self.printrow(&tuning.bends_full);
-        print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        self.printrow(&tuning.bends_one_and_half);
-
-        print!("{:width$} ", "overdraws", width = 20);
-        self.printrow(&tuning.overdraws);
-    }
 }
 
-pub fn run(tuning: &str, key: &str, sharp: Option<bool>) {
+pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
     let tuning = read_tuning_from_file(tuning);
-    let v = Scale::new(key, sharp);
-    v.printlayout(&tuning)
+    let v = ChromaticScale::new(key, sharp);
+    tuning.print_layout(&v, setup);
 }
 
-pub fn run_degrees(tuning: &str, position: usize) {
+pub fn run_degrees(tuning: &str, setup: Setup) {
     let tuning = read_tuning_from_file(tuning);
-    tuning.print_scale_degrees(position);
+    tuning.print_scale_degrees(setup);
 }
 
 fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
@@ -242,7 +262,7 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb"];
     let sharp = ! (top.iter().any(|s| flat_notes.contains(s)) || bottom.iter().any(|s| flat_notes.contains(s)));
 
-    let scale = Scale::new(top.get(0).unwrap(), Some(sharp));
+    let scale = ChromaticScale::new(top.get(0).unwrap(), Some(sharp));
 
     for note in top.iter() {
         top_numbers.push(
@@ -255,6 +275,12 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
         );
     }
     (top_numbers, bottom_numbers)
+}
+
+fn to_scale_degree(index: usize, position: usize) -> String {
+    let index = (index + (position-1)*5) % 12;
+    let degrees = ["1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7"];
+    String::from(degrees[index])
 }
 
 fn read_tuning_from_file(filename: &str) -> Tuning {
