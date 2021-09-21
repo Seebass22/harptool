@@ -18,7 +18,7 @@ pub fn is_scale_note(note: &str, scale: &str) -> bool {
     scales.insert(String::from("minor"), vec!["1", "2", "b3", "4", "5", "b6", "b7"]);
     scales.insert(String::from("natural_minor"), vec!["1", "2", "b3", "4", "5", "b6", "b7"]);
 
-    scales.insert(String::from("locrian"), vec!["1", "b2", "b3", "4", "b5", "b6", "b7"]);
+    scales.insert(String::from("locrian"), vec!["1", "b2", "b3", "4", "#4", "b6", "b7"]);
 
     // pentatonic/blues
     scales.insert(String::from("major_pentatonic"), vec!["1", "2", "3", "5", "6"]);
