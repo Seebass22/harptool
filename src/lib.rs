@@ -336,6 +336,80 @@ fn write_default_layouts() {
     write_layout(paddy_richter, "paddy_richter", &mut filepath);
 }
 
+fn adjust_octaves(row: &Vec<usize>) -> Vec<usize> {
+    let mut row = row.clone();
+    let mut last = 0;
+    let mut add = 0;
+    for x in row.iter_mut() {
+        if *x < last {
+            add += 1;
+        } 
+        last = *x;
+        *x += 12 * add;
+    }
+    row
+}
+
+fn notes_in_order(top: &Vec<i32>, bottom: &Vec<i32>) -> Vec<String> {
+    fn getnote(hole: i32, bends: i32, overblow: bool) -> String {
+        let mut hole = hole.to_string();
+        if overblow {
+            hole.push_str("o");
+        }
+        for _ in 0..bends {
+            hole.push_str("'");
+        }
+        hole
+    }
+    let mut hole = 1;
+    let mut accounted = -1;
+    let mut lastdirection = 1;
+    let mut res: Vec<String> = Vec::new();
+
+    for (top, bottom) in top.iter().zip(bottom.iter()) {
+        let higher;
+        let lower;
+        let direction;
+
+        if *bottom > *top {
+            higher = *bottom;
+            lower = *top;
+            direction = 1;
+        } else {
+            higher = *top;
+            lower = *bottom;
+            direction = -1;
+        }
+
+        if (lower - accounted) > 1 && (higher - accounted) > 1 {
+            res.push(getnote(lastdirection * (hole-1), 0, true));
+            accounted += 1;
+        }
+        if lower > accounted {
+            println!("blow: {}, accounted: {}", lower, accounted);
+            res.push(getnote(direction * hole, 0, false));
+            accounted += 1;
+        }
+        let bends = higher - lower;
+        for step in (1..bends).rev() {
+            res.push(getnote(direction * -hole, step, false));
+            accounted += 1;
+        }
+        if higher > accounted {
+            res.push(getnote(direction * -hole, 0, false));
+            accounted += 1;
+        }
+
+        if accounted == 36 {
+            res.push(getnote(direction * hole, 0, true));
+            accounted += 1;
+        }
+        hole += 1;
+        lastdirection = direction;
+    }
+    res
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -369,5 +443,31 @@ mod tests {
         let (res_top, res_bottom) = convert_to_numbers(top, bottom);
         assert_eq!(top_numbers, res_top);
         assert_eq!(bottom_numbers, res_bottom);
+    }
+
+    #[test]
+    fn test_adjust_octaves() {
+        let notes = vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0];
+        let res = adjust_octaves(&notes);
+        let expected = vec![0, 4, 7, 12, 16, 19, 24, 28, 31, 36];
+        assert_eq!(res, expected);
+
+        let notes = vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9];
+        let res = adjust_octaves(&notes);
+        let expected = vec![2, 7, 11, 14, 17, 21, 23, 26, 29, 33];
+        assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn test_notes_in_order() {
+        let top = vec![0, 4, 7, 12, 16, 19, 24, 28, 31, 36];
+        let bottom = vec![2, 7, 11, 14, 17, 21, 23, 26, 29, 33];
+        let res = notes_in_order(&top, &bottom);
+        let expected = vec![
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
+            "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
+            "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
+        ];
+        assert_eq!(res, expected);
     }
 }
