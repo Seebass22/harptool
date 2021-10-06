@@ -292,8 +292,15 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
 
     filepath.push(filename);
 
-    let contents: Vec<String> = fs::read_to_string(filepath)
-        .expect("note layout file not found")
+    let contents = fs::read_to_string(filepath)
+        .expect("note layout file not found");
+    let (top, bottom) = str_to_rows(&contents);
+
+    Tuning::new(top, bottom)
+}
+
+fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
+    let contents: Vec<String> = input
         .lines()
         .map(|s| s.to_string())
         .collect();
@@ -302,9 +309,7 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
     let bottom: Vec<&str> = contents.get(1).unwrap()
         .split(' ').collect();
 
-    let (top, bottom) = convert_to_numbers(top, bottom);
-
-    Tuning::new(top, bottom)
+    convert_to_numbers(top, bottom)
 }
 
 fn write_default_layouts() {
@@ -443,6 +448,16 @@ mod tests {
         let (res_top, res_bottom) = convert_to_numbers(top, bottom);
         assert_eq!(top_numbers, res_top);
         assert_eq!(bottom_numbers, res_bottom);
+    }
+
+    #[test]
+    fn test_str_to_rows() {
+        let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
+        let (top, bottom) = str_to_rows(richter);
+        let expected_top = vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0];
+        let expected_bottom = vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9];
+        assert_eq!(expected_bottom, bottom);
+        assert_eq!(expected_top, top);
     }
 
     #[test]
