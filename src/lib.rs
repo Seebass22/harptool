@@ -413,8 +413,10 @@ fn notes_in_order(top: &Vec<usize>, bottom: &Vec<usize>) -> Vec<String> {
         }
         let bends = higher - lower;
         for step in (1..bends).rev() {
-            res.push(getnote(direction * -hole, step, false));
-            accounted += 1;
+            if (higher - step) > accounted {
+                res.push(getnote(direction * -hole, step, false));
+                accounted += 1;
+            }
         }
         if higher > accounted {
             res.push(getnote(direction * -hole, 0, false));
@@ -494,6 +496,16 @@ mod tests {
         let res = adjust_octaves(&notes);
         let expected = vec![2, 7, 11, 14, 17, 21, 23, 26, 29, 33];
         assert_eq!(res, expected);
+
+        let notes = vec![0, 4, 7, 0, 4, 4, 7, 0, 4, 9];
+        let res = adjust_octaves(&notes);
+        let expected = vec![0, 4, 7, 12, 16, 16, 19, 24, 28, 33];
+        assert_eq!(res, expected);
+
+        let notes = vec![2, 7, 11, 2, 5, 7, 11, 2, 7, 0];
+        let res = adjust_octaves(&notes);
+        let expected = [2, 7, 11, 14, 17, 19, 23, 26, 31, 36];
+        assert_eq!(res, expected);
     }
 
     #[test]
@@ -517,6 +529,15 @@ mod tests {
             "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
             "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
             "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
+        ];
+        assert_eq!(res, expected);
+
+        let wilde = "C E G C E E G C E A\nD G B D F G B D G C\n";
+        let res = str_to_notes_in_order(wilde);
+        let expected = vec![
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
+            "-4", "4o", "5", "-5", "-6'", "-6", "-7'''", "-7''", "-7'", "-7", "8", "-8'", "-8", "8o",
+            "9", "-9''", "-9'", "-9", "9o", "10", "-10''", "-10'", "-10", "10o",
         ];
         assert_eq!(res, expected);
     }
