@@ -299,6 +299,13 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
     Tuning::new(top, bottom)
 }
 
+pub fn str_to_notes_in_order(input: &str) -> Vec<String> {
+    let (top, bottom) = str_to_rows(input);
+    let top = adjust_octaves(&top);
+    let bottom = adjust_octaves(&bottom);
+    notes_in_order(&top, &bottom)
+}
+
 fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
     let contents: Vec<String> = input
         .lines()
@@ -355,7 +362,7 @@ fn adjust_octaves(row: &Vec<usize>) -> Vec<usize> {
     row
 }
 
-fn notes_in_order(top: &Vec<i32>, bottom: &Vec<i32>) -> Vec<String> {
+fn notes_in_order(top: &Vec<usize>, bottom: &Vec<usize>) -> Vec<String> {
     fn getnote(hole: i32, bends: i32, overblow: bool) -> String {
         let mut hole = hole.to_string();
         if overblow {
@@ -366,6 +373,9 @@ fn notes_in_order(top: &Vec<i32>, bottom: &Vec<i32>) -> Vec<String> {
         }
         hole
     }
+    let top: Vec<i32> = top.iter().map(|x| *x as i32).collect();
+    let bottom: Vec<i32> = bottom.iter().map(|x| *x as i32).collect();
+
     let mut hole = 1;
     let mut accounted = -1;
     let mut lastdirection = 1;
@@ -478,6 +488,18 @@ mod tests {
         let top = vec![0, 4, 7, 12, 16, 19, 24, 28, 31, 36];
         let bottom = vec![2, 7, 11, 14, 17, 21, 23, 26, 29, 33];
         let res = notes_in_order(&top, &bottom);
+        let expected = vec![
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
+            "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
+            "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
+        ];
+        assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn test_str_to_notes_in_order() {
+        let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
+        let res = str_to_notes_in_order(richter);
         let expected = vec![
             "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
             "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
