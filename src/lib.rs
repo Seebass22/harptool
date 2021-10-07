@@ -45,6 +45,13 @@ impl Default for Tuning {
     }
 }
 
+impl From<&str> for Tuning {
+    fn from(s: &str) -> Tuning {
+        let (top, bottom) = str_to_rows(s);
+        Tuning::new(top, bottom)
+    }
+}
+
 impl Tuning {
     pub fn new(top_notes: Vec<usize>, bottom_notes: Vec<usize>) -> Tuning {
         fn is_within_5_semitones(top: usize, bottom: usize) -> bool {
@@ -401,7 +408,6 @@ fn notes_in_order(top: &Vec<usize>, bottom: &Vec<usize>) -> Vec<String> {
             accounted += 1;
         }
         if lower > accounted {
-            println!("blow: {}, accounted: {}", lower, accounted);
             res.push(getnote(direction * hole, 0, false));
             accounted += 1;
         }
@@ -434,6 +440,13 @@ mod tests {
             vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0],
             vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9],
         );
+        assert_eq!(tuning, Tuning::default());
+    }
+
+    #[test]
+    fn test_tuning_from_str() {
+        let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
+        let tuning = Tuning::from(richter);
         assert_eq!(tuning, Tuning::default());
     }
 
