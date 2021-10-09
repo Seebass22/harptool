@@ -306,7 +306,7 @@ fn read_tuning_from_file(filename: &str) -> Tuning {
     Tuning::new(top, bottom)
 }
 
-pub fn str_to_notes_in_order(input: &str) -> Vec<String> {
+pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
     let (top, bottom) = str_to_rows(input);
     let top = adjust_octaves(&top);
     let bottom = adjust_octaves(&bottom);
@@ -369,7 +369,7 @@ fn adjust_octaves(row: &[usize]) -> Vec<usize> {
     row
 }
 
-fn notes_in_order(top: &[usize], bottom: &[usize]) -> Vec<String> {
+fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>) {
     fn getnote(hole: i32, bends: i32, overblow: bool) -> String {
         let mut hole = hole.to_string();
         if overblow {
@@ -386,12 +386,17 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> Vec<String> {
     let mut hole = 1;
     let mut accounted = -1;
     let mut lastdirection = 1;
+    let mut lasthigher = 0;
     let mut res: Vec<String> = Vec::new();
+    let mut duplicated: Vec<String> = Vec::new();
+    let mut alternative;
 
     for (top, bottom) in top.iter().zip(bottom.iter()) {
         let higher;
         let lower;
         let direction;
+        let mut note;
+        let mut ob_duplicated = false;
 
         if *bottom > *top {
             higher = *bottom;
@@ -403,34 +408,63 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> Vec<String> {
             direction = -1;
         }
 
-        if (lower - accounted) > 1 && (higher - accounted) > 1 {
+        if (lower - accounted) > 1 {
             res.push(getnote(lastdirection * (hole-1), 0, true));
             accounted += 1;
+        } else if hole > 1 {
+            ob_duplicated = true;
         }
+
+        note = getnote(direction * hole, 0, false);
         if lower > accounted {
-            res.push(getnote(direction * hole, 0, false));
+            res.push(note);
             accounted += 1;
+        } else {
+            alternative = res.get(lower as usize).unwrap();
+            duplicated.push(note.clone());
+            duplicated.push(alternative.clone());
         }
+
         let bends = higher - lower;
         for step in (1..bends).rev() {
+            note = getnote(direction * -hole, step, false);
             if (higher - step) > accounted {
-                res.push(getnote(direction * -hole, step, false));
+                res.push(note);
                 accounted += 1;
+            } else {
+                alternative = res.get((higher-step) as usize).unwrap();
+                duplicated.push(note.clone());
+                duplicated.push(alternative.clone());
             }
         }
+
+        note = getnote(direction * -hole, 0, false);
         if higher > accounted {
-            res.push(getnote(direction * -hole, 0, false));
+            res.push(note);
             accounted += 1;
+        } else {
+            alternative = res.get(lower as usize).unwrap();
+            duplicated.push(note.clone());
+            duplicated.push(alternative.clone());
         }
 
         if accounted == 36 {
             res.push(getnote(direction * hole, 0, true));
             accounted += 1;
         }
+
+        if ob_duplicated {
+            note = getnote(lastdirection * (hole-1), 0, true);
+            alternative = res.get((lasthigher+1) as usize).unwrap();
+            duplicated.push(note.clone());
+            duplicated.push(alternative.clone());
+        }
+
         hole += 1;
         lastdirection = direction;
+        lasthigher = higher;
     }
-    res
+    (res, duplicated)
 }
 
 #[cfg(test)]
@@ -518,19 +552,21 @@ mod tests {
             "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
             "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
         ];
-        assert_eq!(res, expected);
+        assert_eq!(res.0, expected);
     }
 
     #[test]
     fn test_str_to_notes_in_order() {
         let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
-        let res = str_to_notes_in_order(richter);
+        let (notes, duplicated) = str_to_notes_in_order(richter);
         let expected = vec![
             "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
             "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
             "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
         ];
-        assert_eq!(res, expected);
+        assert_eq!(notes, expected);
+        let expected_duplicated = ["3", "-2", "2o", "-3'''", "3o", "4", "-8o", "-9"];
+        assert_eq!(duplicated, expected_duplicated);
 
         let wilde = "C E G C E E G C E A\nD G B D F G B D G C\n";
         let res = str_to_notes_in_order(wilde);
@@ -539,6 +575,24 @@ mod tests {
             "-4", "4o", "5", "-5", "-6'", "-6", "-7'''", "-7''", "-7'", "-7", "8", "-8'", "-8", "8o",
             "9", "-9''", "-9'", "-9", "9o", "10", "-10''", "-10'", "-10", "10o",
         ];
-        assert_eq!(res, expected);
+        assert_eq!(res.0, expected);
+    }
+
+    #[test]
+    fn test_notes_in_order_no_panics() {
+        let mut tunings: Vec<&str> = Vec::new();
+        tunings.push("C E G C E G C E G C\nD G B D F A B D F A\n");
+        tunings.push("C E G C E G C E G C\nD G B D F# A B D F A\n");
+        tunings.push("C E G C E E G C E A\nD G B D F G B D G C\n");
+        tunings.push("C E A C E G C E G C\nD G B D F# A B D F# A\n",);
+        tunings.push("C Eb G C Eb G C Eb G C\nD G Bb D F A Bb D F A\n",);
+        tunings.push("C Eb G C Eb G C Eb G C\nD G B D F Ab B D F Ab\n",);
+        tunings.push("C E A C E G C E G C\nD G B D F A B D F A\n",);
+        tunings.push("A D E A D E A D E A\nC Eb G C Eb G C Eb G C");
+        tunings.push("C E G C E G A C E A\nD G B D F A B D G C");
+        tunings.push("C E G C D F A C E A\nD G B D E G B D G C");
+        for tuning in tunings {
+            let (_, _) = str_to_notes_in_order(tuning);
+        }
     }
 }
