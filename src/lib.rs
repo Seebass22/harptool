@@ -355,8 +355,8 @@ fn write_default_layouts() {
     write_layout(paddy_richter, "paddy_richter", &mut filepath);
 }
 
-fn adjust_octaves(row: &Vec<usize>) -> Vec<usize> {
-    let mut row = row.clone();
+fn adjust_octaves(row: &[usize]) -> Vec<usize> {
+    let mut row = row.to_vec();
     let mut last = 0;
     let mut add = 0;
     for x in row.iter_mut() {
@@ -369,14 +369,14 @@ fn adjust_octaves(row: &Vec<usize>) -> Vec<usize> {
     row
 }
 
-fn notes_in_order(top: &Vec<usize>, bottom: &Vec<usize>) -> Vec<String> {
+fn notes_in_order(top: &[usize], bottom: &[usize]) -> Vec<String> {
     fn getnote(hole: i32, bends: i32, overblow: bool) -> String {
         let mut hole = hole.to_string();
         if overblow {
-            hole.push_str("o");
+            hole.push('o');
         }
         for _ in 0..bends {
-            hole.push_str("'");
+            hole.push('\'');
         }
         hole
     }
