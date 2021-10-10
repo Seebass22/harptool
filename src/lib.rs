@@ -412,6 +412,11 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
         if (lower - accounted) > 1 {
             res.push(getnote(lastdirection * (hole-1), 0, true));
             accounted += 1;
+            // fix case if notes still missing after adding overblow
+            while (lower - accounted) > 1 {
+                res.push("X".to_string());
+                accounted += 1;
+            }
         } else if hole > 1 {
             // replacement note can only be found after evaluating blow, draw and bent notes
             ob_duplicated = true;
