@@ -408,13 +408,16 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
             direction = -1;
         }
 
+        // overblows
         if (lower - accounted) > 1 {
             res.push(getnote(lastdirection * (hole-1), 0, true));
             accounted += 1;
         } else if hole > 1 {
+            // replacement note can only be found after evaluating blow, draw and bent notes
             ob_duplicated = true;
         }
 
+        // lower note
         note = getnote(direction * hole, 0, false);
         if lower > accounted {
             res.push(note);
@@ -425,6 +428,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
             duplicated.push(alternative.clone());
         }
 
+        // bends
         let bends = higher - lower;
         for step in (1..bends).rev() {
             note = getnote(direction * -hole, step, false);
@@ -438,6 +442,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
             }
         }
 
+        // higher note
         note = getnote(direction * -hole, 0, false);
         if higher > accounted {
             res.push(note);
@@ -448,11 +453,13 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
             duplicated.push(alternative.clone());
         }
 
+        // 10 hole overblow/overdraw
         if accounted == 36 {
             res.push(getnote(direction * hole, 0, true));
             accounted += 1;
         }
 
+        // find replacement for overblow/overdraw
         if ob_duplicated {
             note = getnote(lastdirection * (hole-1), 0, true);
             alternative = res.get((lasthigher+1) as usize).unwrap();
