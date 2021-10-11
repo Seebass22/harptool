@@ -18,15 +18,15 @@ struct ChromaticScale {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tuning {
-    blow: Vec<Option<usize>>,
-    draw: Vec<Option<usize>>,
-    bends_half: Vec<Option<usize>>,
-    bends_full: Vec<Option<usize>>,
-    bends_one_and_half: Vec<Option<usize>>,
-    blow_bends_half: Vec<Option<usize>>,
-    blow_bends_full: Vec<Option<usize>>,
-    overblows: Vec<Option<usize>>,
-    overdraws: Vec<Option<usize>>,
+    pub blow: Vec<Option<usize>>,
+    pub draw: Vec<Option<usize>>,
+    pub bends_half: Vec<Option<usize>>,
+    pub bends_full: Vec<Option<usize>>,
+    pub bends_one_and_half: Vec<Option<usize>>,
+    pub blow_bends_half: Vec<Option<usize>>,
+    pub blow_bends_full: Vec<Option<usize>>,
+    pub overblows: Vec<Option<usize>>,
+    pub overdraws: Vec<Option<usize>>,
 }
 
 impl Default for Tuning {
@@ -39,8 +39,8 @@ impl Default for Tuning {
             bends_one_and_half: vec![None, None, Some(8), None, None, None, None, None, None, None],
             blow_bends_half: vec![None, None, None, None, None, None, None, Some(3), Some(6), Some(11)],
             blow_bends_full: vec![None, None, None, None, None, None, None, None, None, Some(10)],
-            overblows: vec![Some(3), Some(8), Some(0), Some(3), Some(6), Some(10), None, None, None, None],
-            overdraws: vec![None, None, None, None, None, None, Some(1), Some(5), Some(8), Some(1)],
+            overblows: vec![Some(3), None, None, Some(3), Some(6), Some(10), None, None, None, None],
+            overdraws: vec![None, None, None, None, None, None, Some(1), None, Some(8), Some(1)],
         }
     }
 }
@@ -54,10 +54,6 @@ impl From<&str> for Tuning {
 
 impl Tuning {
     pub fn new(top_notes: Vec<usize>, bottom_notes: Vec<usize>) -> Tuning {
-        fn is_within_5_semitones(top: usize, bottom: usize) -> bool {
-            (bottom as i32 - top as i32).abs() < 5
-        }
-
         let blow: Vec<Option<usize>> = top_notes.iter().map(|x| Some(*x)).collect();
         let draw: Vec<Option<usize>> = bottom_notes.iter().map(|x| Some(*x)).collect();
         let mut bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
@@ -68,17 +64,13 @@ impl Tuning {
         let mut overblows: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
         let mut overdraws: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
 
-        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
-            let mut top = *top;
-            let mut bottom = bottom;
+        let top_notes = adjust_octaves(&top_notes);
+        let bottom_notes = adjust_octaves(&bottom_notes);
+        let (_, duplicates) = notes_in_order(&top_notes, &bottom_notes);
 
-            if ! is_within_5_semitones(top, bottom) {
-                if top > bottom {
-                    bottom += 12;
-                } else {
-                    top += 12;
-                }
-            }
+        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
+            let top = *top;
+            let bottom = bottom;
 
             if bottom > top {
                 let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
@@ -100,6 +92,24 @@ impl Tuning {
                 }
                 if top - bottom >= 2 {
                     let _ = blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
+                }
+            }
+        }
+
+        // remove duplicate overblows/overdraws
+        for note in duplicates.iter().step_by(2) {
+            let mut note = note.clone();
+
+            if note.contains("o") {
+                note.pop();
+                let note = note.parse::<i32>().unwrap();
+
+                if note < 0 {
+                    let index = ((-1 * note) -1) as usize;
+                    overdraws.get_mut(index).unwrap().take();
+                } else {
+                    let index = (note -1) as usize;
+                    overblows.get_mut(index).unwrap().take();
                 }
             }
         }
