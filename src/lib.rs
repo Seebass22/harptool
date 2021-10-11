@@ -380,6 +380,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
         }
         hole
     }
+    let harplen = top.len() as i32;
     let top: Vec<i32> = top.iter().map(|x| *x as i32).collect();
     let bottom: Vec<i32> = bottom.iter().map(|x| *x as i32).collect();
 
@@ -458,8 +459,8 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
             duplicated.push(alternative.clone());
         }
 
-        // 10 hole overblow/overdraw
-        if accounted == 36 {
+        // last hole overblow/overdraw
+        if (hole == harplen) && (accounted == higher) {
             res.push(getnote(direction * hole, 0, true));
             accounted += 1;
         }
