@@ -100,12 +100,12 @@ impl Tuning {
         for note in duplicates.iter().step_by(2) {
             let mut note = note.clone();
 
-            if note.contains("o") {
+            if note.contains('o') {
                 note.pop();
                 let note = note.parse::<i32>().unwrap();
 
                 if note < 0 {
-                    let index = ((-1 * note) -1) as usize;
+                    let index = ((-note) -1) as usize;
                     overdraws.get_mut(index).unwrap().take();
                 } else {
                     let index = (note -1) as usize;
