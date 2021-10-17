@@ -56,13 +56,14 @@ impl Tuning {
     pub fn new(top_notes: Vec<usize>, bottom_notes: Vec<usize>) -> Tuning {
         let blow: Vec<Option<usize>> = top_notes.iter().map(|x| Some(*x)).collect();
         let draw: Vec<Option<usize>> = bottom_notes.iter().map(|x| Some(*x)).collect();
-        let mut bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut bends_one_and_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut blow_bends_half: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut blow_bends_full: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut overblows: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
-        let mut overdraws: Vec<Option<usize>> = vec![None, None, None, None, None, None, None, None, None, None];
+        let len = top_notes.len();
+        let mut bends_half: Vec<Option<usize>> = vec![None; len];
+        let mut bends_full: Vec<Option<usize>> = vec![None; len];
+        let mut bends_one_and_half: Vec<Option<usize>> = vec![None; len];
+        let mut blow_bends_half: Vec<Option<usize>> = vec![None; len];
+        let mut blow_bends_full: Vec<Option<usize>> = vec![None; len];
+        let mut overblows: Vec<Option<usize>> = vec![None; len];
+        let mut overdraws: Vec<Option<usize>> = vec![None; len];
 
         let top_notes = adjust_octaves(&top_notes);
         let bottom_notes = adjust_octaves(&bottom_notes);
@@ -160,7 +161,9 @@ impl Tuning {
         Tuning::print_row(&self.blow_bends_half, &setup);
         print!("{:width$} ", "blow", width = 20);
         Tuning::print_row(&self.blow, &setup);
-        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
+
+        self.print_number_row();
+
         print!("{:width$} ", "draw", width = 20);
         Tuning::print_row(&self.draw, &setup);
         print!("{:width$} ", "bends half step", width = 20);
@@ -174,6 +177,16 @@ impl Tuning {
         Tuning::print_row(&self.overdraws, &setup);
     }
 
+    fn print_number_row(&self) {
+        let mut numbers = String::from("");
+        numbers.push('1');
+        for i in 1..self.blow.len() {
+            numbers.push_str("   ");
+            numbers.push_str(&i.to_string());
+        }
+        println!("{:width$} {}", "", numbers.blue(), width = 20);
+    }
+
     fn print_layout(&self, root: &ChromaticScale, setup: Setup) {
         print!("{:width$} ", "overblows", width = 20);
         Tuning::print_row_notes(&self.overblows, root, &setup);
@@ -184,7 +197,9 @@ impl Tuning {
         Tuning::print_row_notes(&self.blow_bends_half, root, &setup);
         print!("{:width$} ", "blow", width = 20);
         Tuning::print_row_notes(&self.blow, root, &setup);
-        println!("{:width$} {}", "", "1   2   3   4   5   6   7   8   9   10".blue(), width = 20);
+
+        self.print_number_row();
+
         print!("{:width$} ", "draw", width = 20);
         Tuning::print_row_notes(&self.draw, root, &setup);
         print!("{:width$} ", "bends half step", width = 20);
