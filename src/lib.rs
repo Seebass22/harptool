@@ -11,9 +11,9 @@ pub struct Setup <'a> {
 }
 
 #[derive(Debug)]
-struct ChromaticScale {
-    root: String,
-    notes: Vec<String>
+pub struct ChromaticScale {
+    pub root: String,
+    pub notes: Vec<String>
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -238,9 +238,9 @@ impl Tuning {
 }
 
 impl ChromaticScale {
-    fn new(note: &str, sharp_notes: Option<bool>) -> ChromaticScale {
+    pub fn new(note: &str, use_sharps: Option<bool>) -> ChromaticScale {
         let sharp;
-        if let Some(value) = sharp_notes {
+        if let Some(value) = use_sharps {
             sharp = value;
             if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note)) ||
                 (! sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note)) {
