@@ -182,6 +182,7 @@ impl Tuning {
         numbers.push('1');
         for i in 1..self.blow.len() {
             numbers.push_str("   ");
+            let i = i+1;
             numbers.push_str(&i.to_string());
         }
         println!("{:width$} {}", "", numbers.blue(), width = 20);
