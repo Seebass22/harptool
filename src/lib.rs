@@ -288,6 +288,8 @@ pub fn run_degrees(tuning: &str, setup: Setup) {
     tuning.print_scale_degrees(setup);
 }
 
+// C E G C E G -> 0 4  7 0 4 7
+// D G B D F A -> 2 7 11 2 5 9
 fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usize>) {
     let mut top_numbers: Vec<usize> = Vec::new();
     let mut bottom_numbers: Vec<usize> = Vec::new();
@@ -339,6 +341,7 @@ pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
     notes_in_order(&top, &bottom)
 }
 
+// "C E G\nD G B" -> [0 4 7], [2 7 11]
 fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
     let contents: Vec<String> = input
         .lines()
@@ -381,6 +384,7 @@ fn write_default_layouts() {
     write_layout(paddy_richter, "paddy_richter", &mut filepath);
 }
 
+// 0 4 7 0 4 7 -> 0 4 7 12 16 19
 fn adjust_octaves(row: &[usize]) -> Vec<usize> {
     let mut row = row.to_vec();
     let mut last = 0;
