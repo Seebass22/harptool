@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use colored::*;
 
-mod scales;
+pub mod scales;
 
 pub struct Setup <'a> {
     pub scale: Option<&'a str>,
