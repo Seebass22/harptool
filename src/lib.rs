@@ -337,7 +337,8 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
          match fs::read_to_string(&filepath) {
             Ok(contents) => contents,
             Err(_) => {
-                eprintln!("tuning file \"{}\" not found", filepath.to_string_lossy());
+                eprintln!("tuning file \"{}\" not found\n", filepath.to_string_lossy());
+                list_tunings();
                 std::process::exit(-1);
             }
         }
