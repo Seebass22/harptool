@@ -2,8 +2,10 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use colored::*;
+use tunings::get_tunings;
 
 pub mod scales;
+pub mod tunings;
 
 pub struct Setup <'a> {
     pub scale: Option<&'a str>,
@@ -278,13 +280,13 @@ impl ChromaticScale {
 }
 
 pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
-    let tuning = read_tuning_from_file(tuning);
+    let tuning = read_tuning_from_hashmap_or_file(tuning);
     let v = ChromaticScale::new(key, sharp);
     tuning.print_layout(&v, setup);
 }
 
 pub fn run_degrees(tuning: &str, setup: Setup) {
-    let tuning = read_tuning_from_file(tuning);
+    let tuning = read_tuning_from_hashmap_or_file(tuning);
     tuning.print_scale_degrees(setup);
 }
 
@@ -318,17 +320,27 @@ fn to_scale_degree(index: usize, position: usize) -> String {
     String::from(degrees[index])
 }
 
-fn read_tuning_from_file(filename: &str) -> Tuning {
-    let mut filepath = dirs::config_dir().unwrap();
-    filepath.push("harptool");
-    if ! filepath.is_dir() {
-        write_default_layouts();
-    }
+fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
+    let tunings = get_tunings();
+    let contents = if let Some(notes) = tunings.get(tuning_name) {
+        notes.to_string()
+    } else {
+        let mut filepath = dirs::config_dir().unwrap();
+        filepath.push("harptool");
+        if ! filepath.is_dir() {
+            write_default_layouts();
+        }
 
-    filepath.push(filename);
+        filepath.push(tuning_name);
 
-    let contents = fs::read_to_string(filepath)
-        .expect("note layout file not found");
+         match fs::read_to_string(&filepath) {
+            Ok(contents) => contents,
+            Err(_) => {
+                eprintln!("tuning file \"{}\" not found", filepath.to_string_lossy());
+                std::process::exit(-1);
+            }
+        }
+    };
     let (top, bottom) = str_to_rows(&contents);
 
     Tuning::new(top, bottom)
