@@ -33,6 +33,7 @@ pub struct Tuning {
 }
 
 impl Default for Tuning {
+    #[rustfmt::skip]
     fn default() -> Tuning {
         Tuning {
             blow: vec![Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0), Some(4), Some(7), Some(0)],

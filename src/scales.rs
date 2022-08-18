@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+#[rustfmt::skip]
 pub fn get_scales() -> BTreeMap<String, Vec<&'static str>> {
     let mut scales = BTreeMap::new();
     scales.insert(String::from("ionian"), vec!["1", "2", "3", "4", "5", "6", "7"]);
