@@ -19,7 +19,7 @@ pub struct ChromaticScale {
     pub notes: Vec<String>
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Tuning {
     pub blow: Vec<Option<usize>>,
     pub draw: Vec<Option<usize>>,
@@ -228,12 +228,11 @@ impl Tuning {
                 None => String::from(" "),
             };
 
-            let degree: String;
-            if let Some(index) = *i {
-                degree = to_scale_degree(index, setup.position);
+            let degree = if let Some(index) = *i {
+                to_scale_degree(index, setup.position)
             } else {
-                degree = String::from("");
-            }
+                String::from("")
+            };
             Tuning::print_colorized(setup.scale, &degree, &n);
         }
         println!();
@@ -300,7 +299,7 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb"];
     let sharp = ! (top.iter().any(|s| flat_notes.contains(s)) || bottom.iter().any(|s| flat_notes.contains(s)));
 
-    let scale = ChromaticScale::new(top.get(0).unwrap(), Some(sharp));
+    let scale = ChromaticScale::new(top.first().unwrap(), Some(sharp));
 
     for note in top.iter() {
         top_numbers.push(
@@ -448,7 +447,6 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
         let higher;
         let lower;
         let direction;
-        let mut note;
         let mut ob_duplicated = false;
 
         if *bottom > *top {
@@ -476,7 +474,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
         }
 
         // lower note
-        note = getnote(direction * hole, 0, false);
+        let mut note = getnote(direction * hole, 0, false);
         if lower > accounted {
             res.push(note);
             accounted += 1;
