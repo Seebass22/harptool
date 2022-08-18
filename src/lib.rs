@@ -2,6 +2,7 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use colored::*;
+use itertools::Itertools;
 use tunings::get_tunings;
 
 pub mod scales;
@@ -349,7 +350,7 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
 pub fn list_tunings() {
     let tunings = get_tunings();
     println!("available tunings:");
-    for tuning in tunings.keys() {
+    for tuning in tunings.keys().sorted() {
         println!("{}", tuning);
     }
 }
