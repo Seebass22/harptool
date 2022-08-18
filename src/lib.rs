@@ -346,6 +346,14 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
     Tuning::new(top, bottom)
 }
 
+pub fn list_tunings() {
+    let tunings = get_tunings();
+    println!("available tunings:");
+    for tuning in tunings.keys() {
+        println!("{}", tuning);
+    }
+}
+
 pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
     let (top, bottom) = str_to_rows(input);
     let top = adjust_octaves(&top);

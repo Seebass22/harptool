@@ -1,6 +1,6 @@
 extern crate clap;
 use clap::{App, Arg};
-use harptool::{run, run_degrees, Setup};
+use harptool::*;
 
 fn is_valid_position(val: String) -> Result<(), String> {
     if let Ok(res) = val.parse::<usize>() {
@@ -52,10 +52,20 @@ fn main() {
                 .long("scale")
                 .short("s")
                 .value_name("SCALE")
-                .help("highlight notes of a scale")
+                .help("highlight notes of a scale"),
+        )
+        .arg(
+            Arg::with_name("list tunings")
+                .long("list-tunings")
+                .short("l")
+                .help("list available tunings"),
         )
         .get_matches();
 
+    if matches.is_present("list tunings") {
+        list_tunings();
+        return;
+    }
     let tuning = matches.value_of("tuning").unwrap_or("richter");
     let key = matches.value_of("key").unwrap_or("C");
     let sharp = if matches.is_present("sharps") {
@@ -71,10 +81,7 @@ fn main() {
         .unwrap_or("1")
         .parse::<usize>()
         .unwrap();
-    let setup = Setup {
-        scale,
-        position,
-    };
+    let setup = Setup { scale, position };
 
     if matches.is_present("degrees") {
         run_degrees(tuning, setup);
