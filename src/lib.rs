@@ -1,9 +1,10 @@
+use crate::scales::get_scales;
+use crate::tunings::get_tunings;
 use colored::*;
 use itertools::Itertools;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use tunings::get_tunings;
 
 pub mod scales;
 pub mod tunings;
@@ -362,6 +363,14 @@ pub fn list_tunings() {
     println!("available tunings:");
     for tuning in tunings.keys().sorted() {
         println!("{}", tuning);
+    }
+}
+
+pub fn list_scales() {
+    let scales = get_scales();
+    println!("available scales:");
+    for scale in scales.keys() {
+        println!("{}", scale);
     }
 }
 

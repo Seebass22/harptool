@@ -60,10 +60,19 @@ fn main() {
                 .short("l")
                 .help("list available tunings"),
         )
+        .arg(
+            Arg::with_name("list scales")
+                .long("list-scales")
+                .help("list available scales"),
+        )
         .get_matches();
 
     if matches.is_present("list tunings") {
         list_tunings();
+        return;
+    }
+    if matches.is_present("list scales") {
+        list_scales();
         return;
     }
     let tuning = matches.value_of("tuning").unwrap_or("richter");
