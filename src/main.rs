@@ -75,8 +75,10 @@ fn main() {
         list_scales();
         return;
     }
+
     let tuning = matches.value_of("tuning").unwrap_or("richter");
     let key = matches.value_of("key").unwrap_or("C");
+
     let sharp = if matches.is_present("sharps") {
         Some(true)
     } else if matches.is_present("flats") {
@@ -84,12 +86,18 @@ fn main() {
     } else {
         None
     };
+
     let scale = matches.value_of("scale");
+    if let Some(scale) = scale {
+        validate_scale(scale);
+    }
+
     let position = matches
         .value_of("position")
         .unwrap_or("1")
         .parse::<usize>()
         .unwrap();
+
     let setup = Setup { scale, position };
 
     if matches.is_present("degrees") {

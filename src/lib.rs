@@ -374,6 +374,15 @@ pub fn list_scales() {
     }
 }
 
+pub fn validate_scale(scale: &str) {
+    let scales = get_scales();
+    if !scales.contains_key(scale) {
+        eprintln!("scale \"{}\" not found\n", scale);
+        list_scales();
+        std::process::exit(-1);
+    }
+}
+
 pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
     let (top, bottom) = str_to_rows(input);
     let top = adjust_octaves(&top);
