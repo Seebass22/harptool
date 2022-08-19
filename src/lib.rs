@@ -339,7 +339,7 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
         let mut filepath = dirs::config_dir().unwrap();
         filepath.push("harptool");
         if !filepath.is_dir() {
-            write_default_layouts();
+            write_example_tuning_layout(filepath.clone());
         }
 
         filepath.push(tuning_name);
@@ -347,7 +347,11 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
         match fs::read_to_string(&filepath) {
             Ok(contents) => contents,
             Err(_) => {
-                eprintln!("tuning file \"{}\" not found\n", filepath.to_string_lossy());
+                eprintln!(
+                    "tuning \"{}\" not found\nadd it by creating file \"{}\"\n",
+                    tuning_name,
+                    filepath.to_string_lossy()
+                );
                 list_tunings();
                 std::process::exit(-1);
             }
@@ -399,33 +403,12 @@ fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
     convert_to_numbers(top, bottom)
 }
 
-fn write_default_layouts() {
-    fn write_layout(tuning: &str, name: &str, path: &mut PathBuf) {
-        path.push(name);
-        let mut f = fs::File::create(&path).unwrap();
-        f.write_all(tuning.as_bytes()).unwrap();
-        path.pop();
-    }
-
-    let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
-    let country = "C E G C E G C E G C\nD G B D F# A B D F A\n";
-    let wilde = "C E G C E E G C E A\nD G B D F G B D G C\n";
-    let melody_maker = "C E A C E G C E G C\nD G B D F# A B D F# A\n";
-    let natural_minor = "C Eb G C Eb G C Eb G C\nD G Bb D F A Bb D F A\n";
-    let harmonic_minor = "C Eb G C Eb G C Eb G C\nD G B D F Ab B D F Ab\n";
-    let paddy_richter = "C E A C E G C E G C\nD G B D F A B D F A\n";
-
-    let mut filepath = dirs::config_dir().unwrap();
-    filepath.push("harptool");
-    fs::create_dir_all(&filepath).expect("could not create note layout dir");
-
-    write_layout(richter, "richter", &mut filepath);
-    write_layout(country, "country", &mut filepath);
-    write_layout(wilde, "wilde", &mut filepath);
-    write_layout(melody_maker, "melody_maker", &mut filepath);
-    write_layout(natural_minor, "natural_minor", &mut filepath);
-    write_layout(harmonic_minor, "harmonic_minor", &mut filepath);
-    write_layout(paddy_richter, "paddy_richter", &mut filepath);
+fn write_example_tuning_layout(mut path: PathBuf) {
+    fs::create_dir_all(&path).expect("could not create note layout dir");
+    path.push("richter example");
+    let mut f = fs::File::create(&path).unwrap();
+    f.write_all("C E G C E G C E G C\nD G B D F A B D F A\n".as_bytes())
+        .unwrap();
 }
 
 // 0 4 7 0 4 7 -> 0 4 7 12 16 19
