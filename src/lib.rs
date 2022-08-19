@@ -1,14 +1,14 @@
+use colored::*;
+use itertools::Itertools;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use colored::*;
-use itertools::Itertools;
 use tunings::get_tunings;
 
 pub mod scales;
 pub mod tunings;
 
-pub struct Setup <'a> {
+pub struct Setup<'a> {
     pub scale: Option<&'a str>,
     pub position: usize,
 }
@@ -16,7 +16,7 @@ pub struct Setup <'a> {
 #[derive(Debug)]
 pub struct ChromaticScale {
     pub root: String,
-    pub notes: Vec<String>
+    pub notes: Vec<String>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -81,7 +81,10 @@ impl Tuning {
                 let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
 
                 if bottom - top >= 4 {
-                    let _ = bends_one_and_half.get_mut(i).unwrap().insert((bottom - 3) % 12);
+                    let _ = bends_one_and_half
+                        .get_mut(i)
+                        .unwrap()
+                        .insert((bottom - 3) % 12);
                 }
                 if bottom - top >= 3 {
                     let _ = bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
@@ -110,10 +113,10 @@ impl Tuning {
                 let note = note.parse::<i32>().unwrap();
 
                 if note < 0 {
-                    let index = ((-note) -1) as usize;
+                    let index = ((-note) - 1) as usize;
                     overdraws.get_mut(index).unwrap().take();
                 } else {
-                    let index = (note -1) as usize;
+                    let index = (note - 1) as usize;
                     overblows.get_mut(index).unwrap().take();
                 }
             }
@@ -134,7 +137,7 @@ impl Tuning {
 
     fn print_row(row: &[Option<usize>], setup: &Setup) {
         for x in row {
-            let n  = match x {
+            let n = match x {
                 None => String::from(" "),
                 Some(x) => to_scale_degree(*x, setup.position),
             };
@@ -186,7 +189,7 @@ impl Tuning {
         numbers.push('1');
         for i in 1..self.blow.len() {
             numbers.push_str("   ");
-            let i = i+1;
+            let i = i + 1;
             numbers.push_str(&i.to_string());
         }
         println!("{:width$} {}", "", numbers.blue(), width = 20);
@@ -245,25 +248,32 @@ impl ChromaticScale {
         let sharp;
         if let Some(value) = use_sharps {
             sharp = value;
-            if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note)) ||
-                (! sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note)) {
-                    panic!("cannot choose sharp/flat notes if root is sharp/flat");
-                }
+            if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
+                || (!sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note))
+            {
+                panic!("cannot choose sharp/flat notes if root is sharp/flat");
+            }
         } else {
             sharp = !vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note);
         }
 
-        if ! vec!["F", "C", "G", "D", "A", "E", "B",
-                  "Bb", "Eb", "Ab", "Db", "Gb",
-                  "F#", "C#", "G#", "D#", "A#",]
-            .contains(&note) {
-                panic!("invalid root note");
-            }
+        if !vec![
+            "F", "C", "G", "D", "A", "E", "B", "Bb", "Eb", "Ab", "Db", "Gb", "F#", "C#", "G#",
+            "D#", "A#",
+        ]
+        .contains(&note)
+        {
+            panic!("invalid root note");
+        }
 
         let notes = if sharp {
-            vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+            vec![
+                "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+            ]
         } else {
-            vec!["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+            vec![
+                "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
+            ]
         };
 
         let mut pos = notes.iter().position(|&n| n == note).unwrap();
@@ -298,26 +308,25 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let mut bottom_numbers: Vec<usize> = Vec::new();
 
     let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb"];
-    let sharp = ! (top.iter().any(|s| flat_notes.contains(s)) || bottom.iter().any(|s| flat_notes.contains(s)));
+    let sharp = !(top.iter().any(|s| flat_notes.contains(s))
+        || bottom.iter().any(|s| flat_notes.contains(s)));
 
     let scale = ChromaticScale::new(top.first().unwrap(), Some(sharp));
 
     for note in top.iter() {
-        top_numbers.push(
-            scale.notes.iter().position(|x| note == x).unwrap()
-        );
+        top_numbers.push(scale.notes.iter().position(|x| note == x).unwrap());
     }
     for note in bottom.iter() {
-        bottom_numbers.push(
-            scale.notes.iter().position(|x| note == x).unwrap()
-        );
+        bottom_numbers.push(scale.notes.iter().position(|x| note == x).unwrap());
     }
     (top_numbers, bottom_numbers)
 }
 
 fn to_scale_degree(index: usize, position: usize) -> String {
-    let index = (index + (position-1)*5) % 12;
-    let degrees = ["1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7"];
+    let index = (index + (position - 1) * 5) % 12;
+    let degrees = [
+        "1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7",
+    ];
     String::from(degrees[index])
 }
 
@@ -328,13 +337,13 @@ fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
     } else {
         let mut filepath = dirs::config_dir().unwrap();
         filepath.push("harptool");
-        if ! filepath.is_dir() {
+        if !filepath.is_dir() {
             write_default_layouts();
         }
 
         filepath.push(tuning_name);
 
-         match fs::read_to_string(&filepath) {
+        match fs::read_to_string(&filepath) {
             Ok(contents) => contents,
             Err(_) => {
                 eprintln!("tuning file \"{}\" not found\n", filepath.to_string_lossy());
@@ -365,14 +374,9 @@ pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
 
 // "C E G\nD G B" -> [0 4 7], [2 7 11]
 fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
-    let contents: Vec<String> = input
-        .lines()
-        .map(|s| s.to_string())
-        .collect();
-    let top: Vec<&str> = contents.get(0).unwrap()
-        .split(' ').collect();
-    let bottom: Vec<&str> = contents.get(1).unwrap()
-        .split(' ').collect();
+    let contents: Vec<String> = input.lines().map(|s| s.to_string()).collect();
+    let top: Vec<&str> = contents.get(0).unwrap().split(' ').collect();
+    let bottom: Vec<&str> = contents.get(1).unwrap().split(' ').collect();
 
     convert_to_numbers(top, bottom)
 }
@@ -414,7 +418,7 @@ fn adjust_octaves(row: &[usize]) -> Vec<usize> {
     for x in row.iter_mut() {
         if *x < last {
             add += 1;
-        } 
+        }
         last = *x;
         *x += 12 * add;
     }
@@ -462,7 +466,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
 
         // overblows
         if (lower - accounted) > 1 {
-            res.push(getnote(lastdirection * (hole-1), 0, true));
+            res.push(getnote(lastdirection * (hole - 1), 0, true));
             accounted += 1;
             // fix case if notes still missing after adding overblow
             while (lower - accounted) > 1 {
@@ -493,7 +497,7 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
                 res.push(note);
                 accounted += 1;
             } else {
-                alternative = res.get((higher-step) as usize).unwrap();
+                alternative = res.get((higher - step) as usize).unwrap();
                 duplicated.push(note.clone());
                 duplicated.push(alternative.clone());
             }
@@ -518,8 +522,8 @@ fn notes_in_order(top: &[usize], bottom: &[usize]) -> (Vec<String>, Vec<String>)
 
         // find replacement for overblow/overdraw
         if ob_duplicated {
-            note = getnote(lastdirection * (hole-1), 0, true);
-            alternative = res.get((lasthigher+1) as usize).unwrap();
+            note = getnote(lastdirection * (hole - 1), 0, true);
+            alternative = res.get((lasthigher + 1) as usize).unwrap();
             duplicated.push(note.clone());
             duplicated.push(alternative.clone());
         }
@@ -612,9 +616,9 @@ mod tests {
         let bottom = vec![2, 7, 11, 14, 17, 21, 23, 26, 29, 33];
         let res = notes_in_order(&top, &bottom);
         let expected = vec![
-            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
-            "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
-            "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4",
+            "-4'", "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8",
+            "8'", "8", "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
         ];
         assert_eq!(res.0, expected);
     }
@@ -624,9 +628,9 @@ mod tests {
         let richter = "C E G C E G C E G C\nD G B D F A B D F A\n";
         let (notes, duplicated) = str_to_notes_in_order(richter);
         let expected = vec![
-            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
-            "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8", "8'", "8",
-            "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4",
+            "-4'", "-4", "4o", "5", "-5", "5o", "6", "-6'", "-6", "6o", "-7", "7", "-7o", "-8",
+            "8'", "8", "-9", "9'", "9", "-9o", "-10", "10''", "10'", "10", "-10o",
         ];
         assert_eq!(notes, expected);
         let expected_duplicated = ["3", "-2", "2o", "-3'''", "3o", "4", "-8o", "-9"];
@@ -635,9 +639,9 @@ mod tests {
         let wilde = "C E G C E E G C E A\nD G B D F G B D G C\n";
         let res = str_to_notes_in_order(wilde);
         let expected = vec![
-            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4", "-4'",
-            "-4", "4o", "5", "-5", "-6'", "-6", "-7'''", "-7''", "-7'", "-7", "8", "-8'", "-8", "8o",
-            "9", "-9''", "-9'", "-9", "9o", "10", "-10''", "-10'", "-10", "10o",
+            "1", "-1'", "-1", "1o", "2", "-2''", "-2'", "-2", "-3'''", "-3''", "-3'", "-3", "4",
+            "-4'", "-4", "4o", "5", "-5", "-6'", "-6", "-7'''", "-7''", "-7'", "-7", "8", "-8'",
+            "-8", "8o", "9", "-9''", "-9'", "-9", "9o", "10", "-10''", "-10'", "-10", "10o",
         ];
         assert_eq!(res.0, expected);
     }
@@ -648,10 +652,10 @@ mod tests {
         tunings.push("C E G C E G C E G C\nD G B D F A B D F A\n");
         tunings.push("C E G C E G C E G C\nD G B D F# A B D F A\n");
         tunings.push("C E G C E E G C E A\nD G B D F G B D G C\n");
-        tunings.push("C E A C E G C E G C\nD G B D F# A B D F# A\n",);
-        tunings.push("C Eb G C Eb G C Eb G C\nD G Bb D F A Bb D F A\n",);
-        tunings.push("C Eb G C Eb G C Eb G C\nD G B D F Ab B D F Ab\n",);
-        tunings.push("C E A C E G C E G C\nD G B D F A B D F A\n",);
+        tunings.push("C E A C E G C E G C\nD G B D F# A B D F# A\n");
+        tunings.push("C Eb G C Eb G C Eb G C\nD G Bb D F A Bb D F A\n");
+        tunings.push("C Eb G C Eb G C Eb G C\nD G B D F Ab B D F Ab\n");
+        tunings.push("C E A C E G C E G C\nD G B D F A B D F A\n");
         tunings.push("A D E A D E A D E A\nC Eb G C Eb G C Eb G C");
         tunings.push("C E G C E G A C E A\nD G B D F A B D G C");
         tunings.push("C E G C D F A C E A\nD G B D E G B D G C");
