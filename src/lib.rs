@@ -171,7 +171,11 @@ impl Tuning {
         let mut numbers = String::from("");
         numbers.push('1');
         for i in 1..self.blow.len() {
-            numbers.push_str("   ");
+            if i < 10 {
+                numbers.push_str("   ");
+            } else {
+                numbers.push_str("  ");
+            }
             let i = i + 1;
             numbers.push_str(&i.to_string());
         }
