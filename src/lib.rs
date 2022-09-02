@@ -136,7 +136,15 @@ impl Tuning {
         }
     }
 
-    fn print_row(row: &[Option<usize>], setup: &Setup) {
+    fn print_row(row: &[Option<usize>], root: Option<&ChromaticScale>, setup: &Setup) {
+        if let Some(root) = root {
+            Tuning::print_row_notes(row, root, setup);
+        } else {
+            Tuning::print_row_degrees(row, setup);
+        }
+    }
+
+    fn print_row_degrees(row: &[Option<usize>], setup: &Setup) {
         for x in row {
             let n = match x {
                 None => String::from(" "),
@@ -159,32 +167,6 @@ impl Tuning {
         }
     }
 
-    fn print_scale_degrees(&self, setup: Setup) {
-        print!("{:width$} ", "overblows", width = 20);
-        Tuning::print_row(&self.overblows, &setup);
-
-        print!("{:width$} ", "blow bends full step", width = 20);
-        Tuning::print_row(&self.blow_bends_full, &setup);
-        print!("{:width$} ", "blow bends half step", width = 20);
-        Tuning::print_row(&self.blow_bends_half, &setup);
-        print!("{:width$} ", "blow", width = 20);
-        Tuning::print_row(&self.blow, &setup);
-
-        self.print_number_row();
-
-        print!("{:width$} ", "draw", width = 20);
-        Tuning::print_row(&self.draw, &setup);
-        print!("{:width$} ", "bends half step", width = 20);
-        Tuning::print_row(&self.bends_half, &setup);
-        print!("{:width$} ", "bends full step", width = 20);
-        Tuning::print_row(&self.bends_full, &setup);
-        print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        Tuning::print_row(&self.bends_one_and_half, &setup);
-
-        print!("{:width$} ", "overdraws", width = 20);
-        Tuning::print_row(&self.overdraws, &setup);
-    }
-
     fn print_number_row(&self) {
         let mut numbers = String::from("");
         numbers.push('1');
@@ -196,30 +178,30 @@ impl Tuning {
         println!("{:width$} {}", "", numbers.blue(), width = 20);
     }
 
-    fn print_layout(&self, root: &ChromaticScale, setup: Setup) {
+    fn print_layout(&self, root: Option<&ChromaticScale>, setup: Setup) {
         print!("{:width$} ", "overblows", width = 20);
-        Tuning::print_row_notes(&self.overblows, root, &setup);
+        Tuning::print_row(&self.overblows, root, &setup);
 
         print!("{:width$} ", "blow bends full step", width = 20);
-        Tuning::print_row_notes(&self.blow_bends_full, root, &setup);
+        Tuning::print_row(&self.blow_bends_full, root, &setup);
         print!("{:width$} ", "blow bends half step", width = 20);
-        Tuning::print_row_notes(&self.blow_bends_half, root, &setup);
+        Tuning::print_row(&self.blow_bends_half, root, &setup);
         print!("{:width$} ", "blow", width = 20);
-        Tuning::print_row_notes(&self.blow, root, &setup);
+        Tuning::print_row(&self.blow, root, &setup);
 
         self.print_number_row();
 
         print!("{:width$} ", "draw", width = 20);
-        Tuning::print_row_notes(&self.draw, root, &setup);
+        Tuning::print_row(&self.draw, root, &setup);
         print!("{:width$} ", "bends half step", width = 20);
-        Tuning::print_row_notes(&self.bends_half, root, &setup);
+        Tuning::print_row(&self.bends_half, root, &setup);
         print!("{:width$} ", "bends full step", width = 20);
-        Tuning::print_row_notes(&self.bends_full, root, &setup);
+        Tuning::print_row(&self.bends_full, root, &setup);
         print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        Tuning::print_row_notes(&self.bends_one_and_half, root, &setup);
+        Tuning::print_row(&self.bends_one_and_half, root, &setup);
 
         print!("{:width$} ", "overdraws", width = 20);
-        Tuning::print_row_notes(&self.overdraws, root, &setup);
+        Tuning::print_row(&self.overdraws, root, &setup);
     }
 
     fn print_row_notes(indices: &[Option<usize>], root: &ChromaticScale, setup: &Setup) {
@@ -294,12 +276,12 @@ impl ChromaticScale {
 pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
     let tuning = read_tuning_from_hashmap_or_file(tuning);
     let v = ChromaticScale::new(key, sharp);
-    tuning.print_layout(&v, setup);
+    tuning.print_layout(Some(&v), setup);
 }
 
 pub fn run_degrees(tuning: &str, setup: Setup) {
     let tuning = read_tuning_from_hashmap_or_file(tuning);
-    tuning.print_scale_degrees(setup);
+    tuning.print_layout(None, setup);
 }
 
 // C E G C E G -> 0 4  7 0 4 7
