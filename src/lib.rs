@@ -6,6 +6,8 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
+mod export_layout;
+
 pub mod scales;
 pub mod tunings;
 
@@ -208,6 +210,37 @@ impl Tuning {
         Tuning::print_row(&self.overdraws, root, &setup);
     }
 
+    // returns Vec< Option<(note_name, is_scale_note)> >
+    pub fn get_row_notes(
+        indices: &[Option<usize>],
+        root: &ChromaticScale,
+        setup: &Setup,
+    ) -> Vec<Option<(String, bool)>> {
+        //                   0     1    2    3     4    5     6     7    8    9    10   11
+        // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+        let notes = &root.notes;
+        let mut res = Vec::new();
+
+        for i in indices {
+            let note;
+            let is_scale_note;
+
+            if let Some(note_index) = *i {
+                note = notes.get(note_index).unwrap().to_string();
+                let degree = to_scale_degree(note_index, setup.position);
+                is_scale_note = if let Some(scale) = setup.scale {
+                    scales::is_scale_note(&degree, scale)
+                } else {
+                    false
+                };
+                res.push(Some((note, is_scale_note)));
+            } else {
+                res.push(None);
+            }
+        }
+        res
+    }
+
     fn print_row_notes(indices: &[Option<usize>], root: &ChromaticScale, setup: &Setup) {
         //                   0     1    2    3     4    5     6     7    8    9    10   11
         // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
@@ -281,6 +314,12 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
     let tuning = read_tuning_from_hashmap_or_file(tuning);
     let v = ChromaticScale::new(key, sharp);
     tuning.print_layout(Some(&v), setup);
+}
+
+pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup) {
+    let tuning = read_tuning_from_hashmap_or_file(tuning_name);
+    let root = ChromaticScale::new(key, sharp);
+    export_layout::export_png(tuning_name, &tuning, &root, setup);
 }
 
 pub fn run_degrees(tuning: &str, setup: Setup) {
@@ -649,5 +688,46 @@ mod tests {
         for tuning in tunings {
             let (_, _) = str_to_notes_in_order(tuning);
         }
+    }
+
+    #[test]
+    fn test_get_row_notes() {
+        let richter = Tuning::default();
+        let root = ChromaticScale::new("C", None);
+        let setup = Setup {
+            scale: Some("major"),
+            position: 3,
+        };
+        let res = Tuning::get_row_notes(&richter.blow, &root, &setup);
+        // E, G in D major scale
+        let expected = vec![
+            Some(("C".to_string(), false)),
+            Some(("E".to_string(), true)),
+            Some(("G".to_string(), true)),
+            Some(("C".to_string(), false)),
+            Some(("E".to_string(), true)),
+            Some(("G".to_string(), true)),
+            Some(("C".to_string(), false)),
+            Some(("E".to_string(), true)),
+            Some(("G".to_string(), true)),
+            Some(("C".to_string(), false)),
+        ];
+        assert_eq!(res, expected);
+
+        // only hole 2 and 3 have double bends, only hole -3'' is in 2nd pos major scale
+        let res = Tuning::get_row_notes(&richter.bends_full, &root, &setup);
+        let expected = vec![
+            None,
+            Some(("F".to_string(), false)),
+            Some(("A".to_string(), true)),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        ];
+        assert_eq!(res, expected);
     }
 }

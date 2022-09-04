@@ -65,6 +65,12 @@ fn main() {
                 .long("list-scales")
                 .help("list available scales"),
         )
+        .arg(
+            Arg::with_name("export")
+                .long("export")
+                .short("e")
+                .help("export PNG of note layout"),
+        )
         .get_matches();
 
     if matches.is_present("list tunings") {
@@ -99,6 +105,10 @@ fn main() {
         .unwrap();
 
     let setup = Setup { scale, position };
+
+    if matches.is_present("export") {
+        export(tuning, key, sharp, &setup);
+    }
 
     if matches.is_present("degrees") {
         run_degrees(tuning, setup);
