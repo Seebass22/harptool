@@ -107,7 +107,7 @@ fn main() {
     let setup = Setup { scale, position };
 
     if matches.is_present("export") {
-        export(tuning, key, sharp, &setup);
+        export(tuning, key, sharp, &setup, matches.is_present("degrees"));
     }
 
     if matches.is_present("degrees") {

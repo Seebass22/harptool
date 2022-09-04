@@ -146,6 +146,24 @@ impl Tuning {
         }
     }
 
+    pub fn get_row_degrees(row: &[Option<usize>], setup: &Setup) -> Vec<Option<(String, bool)>> {
+        let mut res = Vec::new();
+        for x in row {
+            if let Some(note_index) = x {
+                let scale_degree = to_scale_degree(*note_index, setup.position);
+                let is_scale_note = if let Some(scale) = setup.scale {
+                    scales::is_scale_note(&scale_degree, scale)
+                } else {
+                    false
+                };
+                res.push(Some((scale_degree, is_scale_note)));
+            } else {
+                res.push(None);
+            }
+        }
+        res
+    }
+
     fn print_row_degrees(row: &[Option<usize>], setup: &Setup) {
         for x in row {
             let n = match x {
@@ -158,6 +176,7 @@ impl Tuning {
     }
 
     fn print_colorized(scale: Option<&str>, degree: &str, note: &str) {
+        // TODO remove duplication
         if let Some(scale) = scale {
             if scales::is_scale_note(degree, scale) {
                 print!("{:width$} ", note.green(), width = 3);
@@ -316,9 +335,13 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
     tuning.print_layout(Some(&v), setup);
 }
 
-pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup) {
+pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup, use_degrees: bool) {
     let tuning = read_tuning_from_hashmap_or_file(tuning_name);
-    let root = ChromaticScale::new(key, sharp);
+    let root = if use_degrees {
+        None
+    } else {
+        Some(ChromaticScale::new(key, sharp))
+    };
     export_layout::export_png(tuning_name, &tuning, &root, setup);
 }
 
@@ -727,6 +750,29 @@ mod tests {
             None,
             None,
             None,
+        ];
+        assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn test_get_row_degrees() {
+        let richter = Tuning::default();
+        let setup = Setup {
+            scale: Some("major"),
+            position: 1,
+        };
+        let res = Tuning::get_row_degrees(&richter.blow, &setup);
+        let expected = vec![
+            Some(("1".to_string(), true)),
+            Some(("3".to_string(), true)),
+            Some(("5".to_string(), true)),
+            Some(("1".to_string(), true)),
+            Some(("3".to_string(), true)),
+            Some(("5".to_string(), true)),
+            Some(("1".to_string(), true)),
+            Some(("3".to_string(), true)),
+            Some(("5".to_string(), true)),
+            Some(("1".to_string(), true)),
         ];
         assert_eq!(res, expected);
     }
