@@ -6,6 +6,7 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 
+#[cfg(feature = "export")]
 mod export_layout;
 
 pub mod scales;
@@ -335,6 +336,7 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
     tuning.print_layout(Some(&v), setup);
 }
 
+#[allow(unused_variables)]
 pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup, use_degrees: bool, label_rows: bool) {
     let tuning = read_tuning_from_hashmap_or_file(tuning_name);
     let root = if use_degrees {
@@ -342,6 +344,8 @@ pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup, 
     } else {
         Some(ChromaticScale::new(key, sharp))
     };
+
+    #[cfg(feature = "export")]
     export_layout::export_png(tuning_name, &tuning, &root, setup, label_rows);
 }
 

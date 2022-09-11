@@ -10,5 +10,9 @@ clap = "2.33.3"
 dirs = "3.0.2"
 colored = "2"
 itertools = "0.10.3"
-raqote = { version = "0.8.1", features = ["text"] }
+raqote = { version = "0.8.1", features = ["text"], optional = true }
 font-kit = "0.10"
+
+[features]
+default = ["export"]
+export = ["dep:raqote"]
