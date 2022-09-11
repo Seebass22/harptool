@@ -81,9 +81,9 @@ pub fn export_png(
     tuning: &Tuning,
     root: &Option<ChromaticScale>,
     setup: &Setup,
+    should_draw_row_labels: bool,
 ) {
     let mut dt = DrawTarget::new(1024, 600);
-    let should_draw_row_labels = true;
 
     let font = SystemSource::new()
         .select_best_match(&[FamilyName::SansSerif], &Properties::new())

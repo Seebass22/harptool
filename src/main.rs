@@ -71,6 +71,11 @@ fn main() {
                 .short("e")
                 .help("export PNG of note layout"),
         )
+        .arg(
+            Arg::with_name("no-label-rows")
+                .long("no-label-rows")
+                .help("don't label rows in export"),
+        )
         .get_matches();
 
     if matches.is_present("list tunings") {
@@ -105,9 +110,10 @@ fn main() {
         .unwrap();
 
     let setup = Setup { scale, position };
+    let label_rows = !matches.is_present("no-label-rows");
 
     if matches.is_present("export") {
-        export(tuning, key, sharp, &setup, matches.is_present("degrees"));
+        export(tuning, key, sharp, &setup, matches.is_present("degrees"), label_rows);
     }
 
     if matches.is_present("degrees") {
