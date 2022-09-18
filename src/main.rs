@@ -113,7 +113,14 @@ fn main() {
     let label_rows = !matches.is_present("no-label-rows");
 
     if matches.is_present("export") {
-        export(tuning, key, sharp, &setup, matches.is_present("degrees"), label_rows);
+        export(
+            tuning,
+            key,
+            sharp,
+            &setup,
+            matches.is_present("degrees"),
+            label_rows,
+        );
     }
 
     if matches.is_present("degrees") {

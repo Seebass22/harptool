@@ -337,7 +337,14 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
 }
 
 #[allow(unused_variables)]
-pub fn export(tuning_name: &str, key: &str, sharp: Option<bool>, setup: &Setup, use_degrees: bool, label_rows: bool) {
+pub fn export(
+    tuning_name: &str,
+    key: &str,
+    sharp: Option<bool>,
+    setup: &Setup,
+    use_degrees: bool,
+    label_rows: bool,
+) {
     let tuning = read_tuning_from_hashmap_or_file(tuning_name);
     let root = if use_degrees {
         None

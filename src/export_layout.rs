@@ -94,11 +94,7 @@ pub fn export_png(
     let hole_size = 50.0;
     let hole_gap = 4.0;
     let mut y = 0.0;
-    let x = if should_draw_row_labels{
-        190.0
-    } else {
-        5.0
-    };
+    let x = if should_draw_row_labels { 190.0 } else { 5.0 };
 
     if should_draw_row_labels {
         draw_background(Point::new(0., 50.), 185., 550., &mut dt);
