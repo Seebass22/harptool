@@ -11,8 +11,8 @@ dirs = "3.0.2"
 colored = "2"
 itertools = "0.10.3"
 raqote = { version = "0.8.1", features = ["text"], optional = true }
-font-kit = "0.10"
+font-kit = { version = "0.10", optional = true }
 
 [features]
 default = ["export"]
-export = ["dep:raqote"]
+export = ["dep:raqote", "dep:font-kit"]
