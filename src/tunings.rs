@@ -14,6 +14,8 @@ pub fn get_tunings() -> HashMap<&'static str, &'static str> {
         ("pentaharp", "A D E A D E A D E A\nC Eb G C Eb G C Eb G C"),
         ("powerdraw", "C E G C E G A C E A\nD G B D F A B D G C"),
         ("powerbender", "C E G C D F A C E A\nD G B D E G B D G C"),
+        ("diminished", "C Eb Gb A C Eb Gb A C Eb\nD F Ab B D F Ab B D F"),
+        ("lucky 13 diminished", "A C Eb Gb A C Eb Gb A C Eb Gb A\nB D F Ab B D F Ab B D F Ab B"),
         ("lucky 13 powerchromatic", "C D F A C D F A C D F A C\nD E G B D E G B D E G B D"),
         ("easy 3rd", "C E G C E G C E G C\nD F A D F A B D F A"),
         ("4 hole richter", "C E G C\nD F A B"),
