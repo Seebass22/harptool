@@ -1,9 +1,7 @@
 use crate::*;
-use font_kit::family_name::FamilyName;
 use font_kit::loaders::freetype::Font;
-use font_kit::properties::Properties;
-use font_kit::source::SystemSource;
 use raqote::*;
+use std::sync::Arc;
 
 fn draw_number_row(
     dt: &mut DrawTarget,
@@ -85,11 +83,8 @@ pub fn export_png(
 ) {
     let mut dt = DrawTarget::new(1024, 600);
 
-    let font = SystemSource::new()
-        .select_best_match(&[FamilyName::SansSerif], &Properties::new())
-        .unwrap()
-        .load()
-        .unwrap();
+    let font = include_bytes!("dejavu-sans-font/DejaVuSans.ttf");
+    let font = font_kit::font::Font::from_bytes(Arc::new(font.to_vec()), 0).unwrap();
 
     let hole_size = 50.0;
     let hole_gap = 4.0;
@@ -123,7 +118,7 @@ pub fn export_png(
         };
 
         if should_draw_row_labels {
-            draw_row_label(&mut dt, &font, &label, y + 35.0);
+            draw_row_label(&mut dt, &font, label, y + 35.0);
         }
         draw_row(
             &mut dt,
@@ -174,9 +169,9 @@ fn draw_background(pos: Point, width: f32, height: f32, dt: &mut DrawTarget) {
 
 fn draw_row_label(dt: &mut DrawTarget, font: &Font, label: &str, y: f32) {
     dt.draw_text(
-        &font,
+        font,
         18.,
-        &label,
+        label,
         Point::new(0., y),
         &Source::Solid(SolidSource::from_unpremultiplied_argb(255, 0, 0, 0)),
         &DrawOptions::new(),
