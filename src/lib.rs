@@ -139,6 +139,17 @@ impl Tuning {
         }
     }
 
+    pub fn from_name(name: &str) -> Self {
+        let tunings = get_tunings();
+
+        let notes = if let Some(notes) = tunings.get(name) {
+            notes
+        } else {
+            tunings.get("richter").unwrap()
+        };
+        Tuning::from(*notes)
+    }
+
     fn print_row(row: &[Option<usize>], root: Option<&ChromaticScale>, setup: &Setup) {
         if let Some(root) = root {
             Tuning::print_row_notes(row, root, setup);
@@ -604,6 +615,15 @@ mod tests {
             vec![0, 4, 7, 0, 4, 7, 0, 4, 7, 0],
             vec![2, 7, 11, 2, 5, 9, 11, 2, 5, 9],
         );
+        assert_eq!(tuning, Tuning::default());
+    }
+
+    #[test]
+    fn test_tuning_from_name() {
+        let tuning = Tuning::from_name("richter");
+        assert_eq!(tuning, Tuning::default());
+
+        let tuning = Tuning::from_name("");
         assert_eq!(tuning, Tuning::default());
     }
 

@@ -52,3 +52,10 @@ pub fn is_scale_note(note: &str, scale: &str) -> bool {
         false
     }
 }
+
+pub fn scale_degree_to_index(degree: &str) -> usize {
+    let degrees = [
+        "1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7",
+    ];
+    degrees.iter().position(|d| *d == degree).unwrap()
+}
