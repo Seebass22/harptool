@@ -1,9 +1,9 @@
-use once_cell::sync::OnceCell;
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 #[rustfmt::skip]
 pub fn get_scales() -> &'static BTreeMap<String, Vec<&'static str>> {
-    static SCALES: OnceCell<BTreeMap<String, Vec<&'static str>>> = OnceCell::new();
+    static SCALES: OnceLock<BTreeMap<String, Vec<&'static str>>> = OnceLock::new();
 
     SCALES.get_or_init(|| {
         BTreeMap::from([
