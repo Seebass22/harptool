@@ -147,6 +147,7 @@ impl Tuning {
         }
     }
 
+    /// returns Vec< Option<(scale_degree, is_scale_note)> >
     pub fn get_row_degrees(row: &[Option<usize>], setup: &Setup) -> Vec<Option<(String, bool)>> {
         let mut res = Vec::new();
         for x in row {
@@ -230,7 +231,7 @@ impl Tuning {
         Tuning::print_row(&self.overdraws, root, &setup);
     }
 
-    // returns Vec< Option<(note_name, is_scale_note)> >
+    /// returns Vec< Option<(note_name, is_scale_note)> >
     pub fn get_row_notes(
         indices: &[Option<usize>],
         root: &ChromaticScale,
@@ -337,6 +338,7 @@ pub fn run(tuning: &str, key: &str, sharp: Option<bool>, setup: Setup) {
 }
 
 #[allow(unused_variables)]
+/// exports a PNG image of the note layout as "layout.png"
 pub fn export(
     tuning_name: &str,
     key: &str,
@@ -437,6 +439,7 @@ pub fn list_scales() {
     }
 }
 
+/// checks if scale exists and exits otherwise
 pub fn validate_scale(scale: &str) {
     let scales = get_scales();
     if !scales.contains_key(scale) {

@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
+/// return a static reference to a BTreeMap of scale names to scales (vec of scale degres)
 #[rustfmt::skip]
 pub fn get_scales() -> &'static BTreeMap<String, Vec<&'static str>> {
     static SCALES: OnceLock<BTreeMap<String, Vec<&'static str>>> = OnceLock::new();
@@ -48,6 +49,7 @@ pub fn get_scales() -> &'static BTreeMap<String, Vec<&'static str>> {
     })
 }
 
+/// returns whether scale degree "note" is in scale
 pub fn is_scale_note(note: &str, scale: &str) -> bool {
     let scales = get_scales();
 

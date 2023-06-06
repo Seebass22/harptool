@@ -74,6 +74,7 @@ fn draw_square(dt: &mut DrawTarget, size: f32, point: Point, fill_color: Source)
     );
 }
 
+/// exports a PNG image of the note layout as "layout.png"
 pub fn export_png(
     tuning_name: &str,
     tuning: &Tuning,
