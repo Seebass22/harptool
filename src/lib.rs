@@ -79,7 +79,6 @@ impl Tuning {
 
         for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             let top = *top;
-            let bottom = bottom;
 
             if bottom > top {
                 let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
@@ -289,16 +288,16 @@ impl ChromaticScale {
         let sharp;
         if let Some(value) = use_sharps {
             sharp = value;
-            if (sharp && vec!["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
-                || (!sharp && vec!["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note))
+            if (sharp && ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
+                || (!sharp && ["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note))
             {
                 panic!("cannot choose sharp/flat notes if root is sharp/flat");
             }
         } else {
-            sharp = !vec!["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note);
+            sharp = !["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note);
         }
 
-        if !vec![
+        if ![
             "F", "C", "G", "D", "A", "E", "B", "Bb", "Eb", "Ab", "Db", "Gb", "F#", "C#", "G#",
             "D#", "A#",
         ]
@@ -369,7 +368,7 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let mut top_numbers: Vec<usize> = Vec::new();
     let mut bottom_numbers: Vec<usize> = Vec::new();
 
-    let flat_notes = vec!["Bb", "Eb", "Ab", "Db", "Gb"];
+    let flat_notes = ["Bb", "Eb", "Ab", "Db", "Gb"];
     let sharp = !(top.iter().any(|s| flat_notes.contains(s))
         || bottom.iter().any(|s| flat_notes.contains(s)));
 
@@ -458,8 +457,8 @@ pub fn str_to_notes_in_order(input: &str) -> (Vec<String>, Vec<String>) {
 
 // "C E G\nD G B" -> [0 4 7], [2 7 11]
 fn str_to_rows(input: &str) -> (Vec<usize>, Vec<usize>) {
-    let contents: Vec<String> = input.lines().map(|s| s.to_string()).collect();
-    let top: Vec<&str> = contents.get(0).unwrap().split(' ').collect();
+    let contents: Vec<&str> = input.lines().collect();
+    let top: Vec<&str> = contents.first().unwrap().split(' ').collect();
     let bottom: Vec<&str> = contents.get(1).unwrap().split(' ').collect();
 
     convert_to_numbers(top, bottom)
