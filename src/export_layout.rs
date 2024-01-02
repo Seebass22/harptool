@@ -197,7 +197,7 @@ fn get_caption(tuning_name: &str, root: &Option<ChromaticScale>, setup: &Setup) 
     };
 
     let harmonica_type = if let Some(root) = root {
-        format!("{} {} harmonica", root.root, tuning_name)
+        format!("{} {} harmonica", root.0[0], tuning_name)
     } else {
         format!("{} harmonica", tuning_name)
     };

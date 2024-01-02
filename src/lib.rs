@@ -18,10 +18,7 @@ pub struct Setup<'a> {
 }
 
 #[derive(Debug)]
-pub struct ChromaticScale {
-    pub root: String,
-    pub notes: Vec<String>,
-}
+pub struct ChromaticScale(pub [&'static str; 12]);
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Tuning {
@@ -238,7 +235,7 @@ impl Tuning {
     ) -> Vec<Option<(String, bool)>> {
         //                   0     1    2    3     4    5     6     7    8    9    10   11
         // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-        let notes = &root.notes;
+        let notes = root.0;
         let mut res = Vec::new();
 
         for i in indices {
@@ -264,7 +261,7 @@ impl Tuning {
     fn print_row_notes(indices: &[Option<usize>], root: &ChromaticScale, setup: &Setup) {
         //                   0     1    2    3     4    5     6     7    8    9    10   11
         // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-        let notes = &root.notes;
+        let notes = root.0;
 
         for i in indices {
             let n = match *i {
@@ -284,49 +281,46 @@ impl Tuning {
 }
 
 impl ChromaticScale {
-    pub fn new(note: &str, use_sharps: Option<bool>) -> ChromaticScale {
+    pub fn new(root: &str, use_sharps: Option<bool>) -> ChromaticScale {
         let sharp;
         if let Some(value) = use_sharps {
             sharp = value;
-            if (sharp && ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&note))
-                || (!sharp && ["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&note))
+            if (sharp && ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"].contains(&root))
+                || (!sharp && ["F#", "C#", "G#", "D#", "A#", "E#", "B#"].contains(&root))
             {
                 panic!("cannot choose sharp/flat notes if root is sharp/flat");
             }
         } else {
-            sharp = !["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&note);
+            sharp = !["Bb", "Eb", "Ab", "Db", "Gb", "F"].contains(&root);
         }
 
         if ![
             "F", "C", "G", "D", "A", "E", "B", "Bb", "Eb", "Ab", "Db", "Gb", "F#", "C#", "G#",
             "D#", "A#",
         ]
-        .contains(&note)
+        .contains(&root)
         {
             panic!("invalid root note");
         }
 
         let notes = if sharp {
-            vec![
+            [
                 "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
             ]
         } else {
-            vec![
+            [
                 "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
             ]
         };
 
-        let mut pos = notes.iter().position(|&n| n == note).unwrap();
-        let mut v = Vec::new();
-        for _i in 0..notes.len() {
-            v.push(notes.get(pos % 12).unwrap().to_string());
+        let mut scale = [""; 12];
+        let mut pos = notes.iter().position(|&n| n == root).unwrap();
+        for note in scale.iter_mut() {
+            *note = notes.get(pos % 12).unwrap();
             pos += 1;
         }
 
-        ChromaticScale {
-            root: note.to_string(),
-            notes: v,
-        }
+        ChromaticScale(scale)
     }
 }
 
@@ -375,10 +369,10 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     let scale = ChromaticScale::new(top.first().unwrap(), Some(sharp));
 
     for note in top.iter() {
-        top_numbers.push(scale.notes.iter().position(|x| note == x).unwrap());
+        top_numbers.push(scale.0.iter().position(|x| note == x).unwrap());
     }
     for note in bottom.iter() {
-        bottom_numbers.push(scale.notes.iter().position(|x| note == x).unwrap());
+        bottom_numbers.push(scale.0.iter().position(|x| note == x).unwrap());
     }
     (top_numbers, bottom_numbers)
 }
