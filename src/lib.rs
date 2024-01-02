@@ -144,13 +144,16 @@ impl Tuning {
     }
 
     /// returns Vec< Option<(scale_degree, is_scale_note)> >
-    pub fn get_row_degrees(row: &[Option<usize>], setup: &Setup) -> Vec<Option<(String, bool)>> {
+    pub fn get_row_degrees(
+        row: &[Option<usize>],
+        setup: &Setup,
+    ) -> Vec<Option<(&'static str, bool)>> {
         let mut res = Vec::new();
         for x in row {
             if let Some(note_index) = x {
                 let scale_degree = to_scale_degree(*note_index, setup.position);
                 let is_scale_note = if let Some(scale) = setup.scale {
-                    scales::is_scale_note(&scale_degree, scale)
+                    scales::is_scale_note(scale_degree, scale)
                 } else {
                     false
                 };
@@ -165,10 +168,10 @@ impl Tuning {
     fn print_row_degrees(row: &[Option<usize>], setup: &Setup) {
         for x in row {
             let n = match x {
-                None => String::from(" "),
+                None => " ",
                 Some(x) => to_scale_degree(*x, setup.position),
             };
-            Tuning::print_colorized(setup.scale, &n[..], &n[..]);
+            Tuning::print_colorized(setup.scale, n, n);
         }
         println!();
     }
@@ -232,7 +235,7 @@ impl Tuning {
         indices: &[Option<usize>],
         root: &ChromaticScale,
         setup: &Setup,
-    ) -> Vec<Option<(String, bool)>> {
+    ) -> Vec<Option<(&'static str, bool)>> {
         //                   0     1    2    3     4    5     6     7    8    9    10   11
         // let notes = vec!["C", "Dd", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
         let notes = root.0;
@@ -243,14 +246,14 @@ impl Tuning {
             let is_scale_note;
 
             if let Some(note_index) = *i {
-                note = notes.get(note_index).unwrap().to_string();
+                note = notes.get(note_index).unwrap();
                 let degree = to_scale_degree(note_index, setup.position);
                 is_scale_note = if let Some(scale) = setup.scale {
-                    scales::is_scale_note(&degree, scale)
+                    scales::is_scale_note(degree, scale)
                 } else {
                     false
                 };
-                res.push(Some((note, is_scale_note)));
+                res.push(Some((*note, is_scale_note)));
             } else {
                 res.push(None);
             }
@@ -272,9 +275,9 @@ impl Tuning {
             let degree = if let Some(index) = *i {
                 to_scale_degree(index, setup.position)
             } else {
-                String::from("")
+                ""
             };
-            Tuning::print_colorized(setup.scale, &degree, &n);
+            Tuning::print_colorized(setup.scale, degree, &n);
         }
         println!();
     }
@@ -377,12 +380,12 @@ fn convert_to_numbers(top: Vec<&str>, bottom: Vec<&str>) -> (Vec<usize>, Vec<usi
     (top_numbers, bottom_numbers)
 }
 
-fn to_scale_degree(index: usize, position: usize) -> String {
+fn to_scale_degree(index: usize, position: usize) -> &'static str {
     let index = (index + (position - 1) * 5) % 12;
     let degrees = [
         "1", "b2", "2", "b3", "3", "4", "#4", "5", "b6", "6", "b7", "7",
     ];
-    String::from(degrees[index])
+    degrees[index]
 }
 
 fn read_tuning_from_hashmap_or_file(tuning_name: &str) -> Tuning {
@@ -731,16 +734,16 @@ mod tests {
         let res = Tuning::get_row_notes(&richter.blow, &root, &setup);
         // E, G in D major scale
         let expected = vec![
-            Some(("C".to_string(), false)),
-            Some(("E".to_string(), true)),
-            Some(("G".to_string(), true)),
-            Some(("C".to_string(), false)),
-            Some(("E".to_string(), true)),
-            Some(("G".to_string(), true)),
-            Some(("C".to_string(), false)),
-            Some(("E".to_string(), true)),
-            Some(("G".to_string(), true)),
-            Some(("C".to_string(), false)),
+            Some(("C", false)),
+            Some(("E", true)),
+            Some(("G", true)),
+            Some(("C", false)),
+            Some(("E", true)),
+            Some(("G", true)),
+            Some(("C", false)),
+            Some(("E", true)),
+            Some(("G", true)),
+            Some(("C", false)),
         ];
         assert_eq!(res, expected);
 
@@ -748,8 +751,8 @@ mod tests {
         let res = Tuning::get_row_notes(&richter.bends_full, &root, &setup);
         let expected = vec![
             None,
-            Some(("F".to_string(), false)),
-            Some(("A".to_string(), true)),
+            Some(("F", false)),
+            Some(("A", true)),
             None,
             None,
             None,
@@ -770,16 +773,16 @@ mod tests {
         };
         let res = Tuning::get_row_degrees(&richter.blow, &setup);
         let expected = vec![
-            Some(("1".to_string(), true)),
-            Some(("3".to_string(), true)),
-            Some(("5".to_string(), true)),
-            Some(("1".to_string(), true)),
-            Some(("3".to_string(), true)),
-            Some(("5".to_string(), true)),
-            Some(("1".to_string(), true)),
-            Some(("3".to_string(), true)),
-            Some(("5".to_string(), true)),
-            Some(("1".to_string(), true)),
+            Some(("1", true)),
+            Some(("3", true)),
+            Some(("5", true)),
+            Some(("1", true)),
+            Some(("3", true)),
+            Some(("5", true)),
+            Some(("1", true)),
+            Some(("3", true)),
+            Some(("5", true)),
+            Some(("1", true)),
         ];
         assert_eq!(res, expected);
     }

@@ -34,7 +34,7 @@ fn draw_row(
     hole_size: f32,
     hole_gap: f32,
     pos: Point,
-    notes: &Vec<Option<(String, bool)>>,
+    notes: &Vec<Option<(&'static str, bool)>>,
 ) {
     for i in 0..notes.len() {
         if let Some((note, is_scale_note)) = notes.get(i).unwrap() {
