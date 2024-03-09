@@ -76,28 +76,25 @@ impl Tuning {
 
         for (i, (&top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             if bottom > top {
-                let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
+                overblows[i] = Some((bottom + 1) % 12);
 
                 if bottom - top >= 4 {
-                    let _ = bends_one_and_half
-                        .get_mut(i)
-                        .unwrap()
-                        .insert((bottom - 3) % 12);
+                    bends_one_and_half[i] = Some((bottom - 3) % 12);
                 }
                 if bottom - top >= 3 {
-                    let _ = bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
+                    bends_full[i] = Some((bottom - 2) % 12);
                 }
                 if bottom - top >= 2 {
-                    let _ = bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
+                    bends_half[i] = Some((bottom - 1) % 12);
                 }
             } else {
-                let _ = overdraws.get_mut(i).unwrap().insert((top + 1) % 12);
+                overdraws[i] = Some((top + 1) % 12);
 
                 if top - bottom >= 3 {
-                    let _ = blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
+                    blow_bends_full[i] = Some((top - 2) % 12)
                 }
                 if top - bottom >= 2 {
-                    let _ = blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
+                    blow_bends_half[i] = Some((top - 1) % 12);
                 }
             }
         }
