@@ -74,9 +74,7 @@ impl Tuning {
         let bottom_notes = adjust_octaves(&bottom_notes);
         let (_, duplicates) = notes_in_order(&top_notes, &bottom_notes);
 
-        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
-            let top = *top;
-
+        for (i, (&top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             if bottom > top {
                 let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
 
