@@ -74,32 +74,27 @@ impl Tuning {
         let bottom_notes = adjust_octaves(&bottom_notes);
         let (_, duplicates) = notes_in_order(&top_notes, &bottom_notes);
 
-        for (i, (top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
-            let top = *top;
-
+        for (i, (&top, bottom)) in top_notes.iter().zip(bottom_notes).enumerate() {
             if bottom > top {
-                let _ = overblows.get_mut(i).unwrap().insert((bottom + 1) % 12);
+                overblows[i] = Some((bottom + 1) % 12);
 
                 if bottom - top >= 4 {
-                    let _ = bends_one_and_half
-                        .get_mut(i)
-                        .unwrap()
-                        .insert((bottom - 3) % 12);
+                    bends_one_and_half[i] = Some((bottom - 3) % 12);
                 }
                 if bottom - top >= 3 {
-                    let _ = bends_full.get_mut(i).unwrap().insert((bottom - 2) % 12);
+                    bends_full[i] = Some((bottom - 2) % 12);
                 }
                 if bottom - top >= 2 {
-                    let _ = bends_half.get_mut(i).unwrap().insert((bottom - 1) % 12);
+                    bends_half[i] = Some((bottom - 1) % 12);
                 }
             } else {
-                let _ = overdraws.get_mut(i).unwrap().insert((top + 1) % 12);
+                overdraws[i] = Some((top + 1) % 12);
 
                 if top - bottom >= 3 {
-                    let _ = blow_bends_full.get_mut(i).unwrap().insert((top - 2) % 12);
+                    blow_bends_full[i] = Some((top - 2) % 12)
                 }
                 if top - bottom >= 2 {
-                    let _ = blow_bends_half.get_mut(i).unwrap().insert((top - 1) % 12);
+                    blow_bends_half[i] = Some((top - 1) % 12);
                 }
             }
         }
@@ -177,57 +172,48 @@ impl Tuning {
     }
 
     fn print_colorized(scale: Option<&str>, degree: &str, note: &str) {
-        // TODO remove duplication
-        if let Some(scale) = scale {
-            if scales::is_scale_note(degree, scale) {
-                print!("{:width$} ", note.green(), width = 3);
-            } else {
-                print!("{:width$} ", note, width = 3);
-            }
+        let to_print = if scale.is_some() && scales::is_scale_note(degree, scale.unwrap()) {
+            note.green()
         } else {
-            print!("{:width$} ", note, width = 3);
-        }
+            note.clear()
+        };
+        print!("{:width$} ", to_print, width = 3);
     }
 
     fn print_number_row(&self) {
         let mut numbers = String::from("");
         numbers.push('1');
-        for i in 1..self.blow.len() {
-            if i < 10 {
+        for i in 2..self.blow.len() + 1 {
+            if i <= 10 {
                 numbers.push_str("   ");
             } else {
                 numbers.push_str("  ");
             }
-            let i = i + 1;
             numbers.push_str(&i.to_string());
         }
         println!("{:width$} {}", "", numbers.blue(), width = 20);
     }
 
     fn print_layout(&self, root: Option<&ChromaticScale>, setup: Setup) {
-        print!("{:width$} ", "overblows", width = 20);
-        Tuning::print_row(&self.overblows, root, &setup);
-
-        print!("{:width$} ", "blow bends full step", width = 20);
-        Tuning::print_row(&self.blow_bends_full, root, &setup);
-        print!("{:width$} ", "blow bends half step", width = 20);
-        Tuning::print_row(&self.blow_bends_half, root, &setup);
-        print!("{:width$} ", "blow", width = 20);
-        Tuning::print_row(&self.blow, root, &setup);
-
-        self.print_number_row();
-
-        print!("{:width$} ", "draw", width = 20);
-        Tuning::print_row(&self.draw, root, &setup);
-        print!("{:width$} ", "bends half step", width = 20);
-        Tuning::print_row(&self.bends_half, root, &setup);
-        print!("{:width$} ", "bends full step", width = 20);
-        Tuning::print_row(&self.bends_full, root, &setup);
-        print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        Tuning::print_row(&self.bends_one_and_half, root, &setup);
-
-        print!("{:width$} ", "overdraws", width = 20);
-        Tuning::print_row(&self.overdraws, root, &setup);
+        for row in [
+            ("overblows", &self.overblows),
+            ("blow bends full step", &self.blow_bends_full),
+            ("blow bends half step", &self.blow_bends_half),
+            ("blow", &self.blow),
+            ("", &Vec::new()), // for number row
+            ("draw", &self.draw),
+            ("bends half step", &self.bends_half),
+            ("bends full step", &self.bends_full),
+            ("bends 1 1/2 step", &self.bends_one_and_half),
+            ("overdraws", &self.overdraws),
+        ] {
+            if row.0 == "" {
+                self.print_number_row();
+                continue;
+            }
+            print!("{:width$} ", row.0, width = 20);
+            Tuning::print_row(row.1, root, &setup);
+        }
     }
 
     /// returns Vec< Option<(note_name, is_scale_note)> >
