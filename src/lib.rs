@@ -172,16 +172,12 @@ impl Tuning {
     }
 
     fn print_colorized(scale: Option<&str>, degree: &str, note: &str) {
-        // TODO remove duplication
-        if let Some(scale) = scale {
-            if scales::is_scale_note(degree, scale) {
-                print!("{:width$} ", note.green(), width = 3);
-            } else {
-                print!("{:width$} ", note, width = 3);
-            }
+        let to_print = if scale.is_some() && scales::is_scale_note(degree, scale.unwrap()) {
+            note.green()
         } else {
-            print!("{:width$} ", note, width = 3);
-        }
+            note.clear()
+        };
+        print!("{:width$} ", to_print, width = 3);
     }
 
     fn print_number_row(&self) {
