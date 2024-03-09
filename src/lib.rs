@@ -200,29 +200,25 @@ impl Tuning {
     }
 
     fn print_layout(&self, root: Option<&ChromaticScale>, setup: Setup) {
-        print!("{:width$} ", "overblows", width = 20);
-        Tuning::print_row(&self.overblows, root, &setup);
-
-        print!("{:width$} ", "blow bends full step", width = 20);
-        Tuning::print_row(&self.blow_bends_full, root, &setup);
-        print!("{:width$} ", "blow bends half step", width = 20);
-        Tuning::print_row(&self.blow_bends_half, root, &setup);
-        print!("{:width$} ", "blow", width = 20);
-        Tuning::print_row(&self.blow, root, &setup);
-
-        self.print_number_row();
-
-        print!("{:width$} ", "draw", width = 20);
-        Tuning::print_row(&self.draw, root, &setup);
-        print!("{:width$} ", "bends half step", width = 20);
-        Tuning::print_row(&self.bends_half, root, &setup);
-        print!("{:width$} ", "bends full step", width = 20);
-        Tuning::print_row(&self.bends_full, root, &setup);
-        print!("{:width$} ", "bends 1 1/2 step", width = 20);
-        Tuning::print_row(&self.bends_one_and_half, root, &setup);
-
-        print!("{:width$} ", "overdraws", width = 20);
-        Tuning::print_row(&self.overdraws, root, &setup);
+        for row in [
+            ("overblows", &self.overblows),
+            ("blow bends full step", &self.blow_bends_full),
+            ("blow bends half step", &self.blow_bends_half),
+            ("blow", &self.blow),
+            ("", &Vec::new()), // for number row
+            ("draw", &self.draw),
+            ("bends half step", &self.bends_half),
+            ("bends full step", &self.bends_full),
+            ("bends 1 1/2 step", &self.bends_one_and_half),
+            ("overdraws", &self.overdraws),
+        ] {
+            if row.0 == "" {
+                self.print_number_row();
+                continue;
+            }
+            print!("{:width$} ", row.0, width = 20);
+            Tuning::print_row(row.1, root, &setup);
+        }
     }
 
     /// returns Vec< Option<(note_name, is_scale_note)> >
