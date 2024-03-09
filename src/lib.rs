@@ -187,13 +187,12 @@ impl Tuning {
     fn print_number_row(&self) {
         let mut numbers = String::from("");
         numbers.push('1');
-        for i in 1..self.blow.len() {
-            if i < 10 {
+        for i in 2..self.blow.len() + 1 {
+            if i <= 10 {
                 numbers.push_str("   ");
             } else {
                 numbers.push_str("  ");
             }
-            let i = i + 1;
             numbers.push_str(&i.to_string());
         }
         println!("{:width$} {}", "", numbers.blue(), width = 20);
