@@ -3,7 +3,7 @@ harptool
 Harptool is a simple CLI tool that prints note layouts for diatonic harmonicas in a variety of tunings, in any key.
 You can easily add your own tunings if you're missing any.
 ```
-$ harptool --key G --tuning paddy_richter
+$ harptool --key G --tuning "paddy richter"
 overblows            A#  D#  G   A#  C#  F                   
 blow bends full step                                     F   
 blow bends half step                             A#  C#  F#  
@@ -13,7 +13,7 @@ draw                 A   D   F#  A   C   E   F#  A   C   E
 bends half step      G#  C#  F   G#      D#                  
 bends full step          C                                   
 bends 1 1/2 step                                             
-overdraws                                    G#  C   D#  G#  
+overdraws                                    G#      D#  G#  
 
 ```
 Harptool defaults to richter tuning and key of C if you do not specify.
@@ -33,7 +33,7 @@ harptool --tuning wilde
 ```
 colorize notes belonging to a scale
 ```sh
-harptool --scale minor_pentatonic
+harptool --scale "minor pentatonic"
 ```
 specify a different [position](https://en.wikipedia.org/wiki/Harmonica_techniques#Positions) (1st position is default). Affects scale notes (`--scale`) and scale degrees (`--degrees`).
 ```sh
